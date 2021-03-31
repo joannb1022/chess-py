@@ -9,3 +9,6 @@ class Square:
         temp = self.piece
         self.piece = None
         return temp
+
+    def is_empty(self):
+        return self.piece
