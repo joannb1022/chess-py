@@ -11,8 +11,8 @@ class Pawn(Piece):
     def __init__(self, color):
         Piece.__init__(self, color)
         self.can_move_two = True
-        self.can_take_increasing = False
-        self.can_take_decreasing = False
+        self.en_passant_increasing = False
+        self.en_passant_decreasing = False
 
     def can_reach(self, s_col, s_row, t_col, t_row):
         if(abs(t_row - s_row) == 2 and self.can_move_two):
@@ -30,7 +30,30 @@ class Pawn(Piece):
     #     """"""
 
     def get_directions(self):
-        """"""""
+        res = []
+        if self.color == 'b':
+            res.append((1,0))
+            if self.can_move_two:
+                res.append((2,0))
+        else:
+            res.append((-1,0))
+            if self.can_move_two:
+                res.append((-2,0))
+        return res
+
+    def get_en_passant(self):
+        res = []
+        if self.color == 'b':
+            multip = 1
+        else:
+            multip = -1
+
+        if self.en_passant_decreasing:
+            res.append((1*multip,-1))
+        if self.en_passant_increasing:
+            res.append((1*multip, 1))
+
+        return res
 
     def draw(self):
         return 'p'

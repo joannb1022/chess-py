@@ -10,6 +10,7 @@ class Board:
         self.black_king = (0,4)
         self.white_king = (7,4)
         self.move_history = []
+        self.en_passant = []
 
     def place_pieces(self):
         self.board[0][0].place_piece(pieces.Rook('b'))
@@ -65,13 +66,37 @@ class Board:
         piece = self.board[row][col].piece
 
         res = []
+
+        
+        if isinstance(piece, pieces.Pawn):
+            if piece.color == 'b':
+                multip = 1
+            else:
+                multip = -1
+            
+            if self.board[multip+row][col].is_empty() and not self.discovers_check((multip, 0), col, row):
+                res.append((row+multip,col))
+                if multip%7 == 6 or multip%7 == 1 and self.board[2*multip+row][col].is_empty() and not self.discovers_check((multip*2, 0), col, row):
+                    res.append((row+multip*2, col))
+
+            curr_square = self.board[multip+row][col-1]
+            if col-1 > -1 and not curr_square.is_empty() and curr_square.piece.color != piece.color and not self.discovers_check((multip, -1), col, row):
+                res.append((multip+row, col-1))
+
+            curr_square = self.board[multip+row][col+1]
+            if col+1 < 8 and not curr_square.is_empty() and curr_square.piece.color != piece.color and not self.discovers_check((multip, 1), col, row):
+                res.append((multip+row, col+1))
+
+            en_passant = piece.get_en_passant()
+
+            for el in en_passant:
+                res.append(el)
+
+            
         directions = piece.get_directions()
 
-        if isinstance(piece, pieces.Pawn):
-            
 
-
-        elif isinstance(piece, pieces.King):
+        if isinstance(piece, pieces.King):
             for el in directions:
                 curr_square = self.board[row+el[0]][col+el[1]]
                 if row+el[0] > -1 and row+el[0] < 8 and col+el[1] > -1 and col+el[1] < 8 \
@@ -187,9 +212,22 @@ class Board:
 
         self.move_piece(col, row, col+dir[1], row+dir[0])
         is_check = self.is_in_check(color)
-        self.move_piece(col, row, col+dir[1], row+dir[0])
-
+        
+        self.reverse_move()
+        
         return is_check
+
+
+    def reverse_move(self):
+
+        hist = self.move_history[-1]
+        
+        self.move_piece(hist.end_pos[1], hist.end_pos[0], hist.start_pos[1], hist.start_pos[0])
+        self.board[hist.end_pos[0]][hist.end_pos[1]].place_piece(hist.taken_piece)
+        self.move_history.pop()
+
+
+
 
 
 if __name__ == '__main__':
