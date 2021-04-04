@@ -56,7 +56,7 @@ class Pawn(Piece):
         return res
 
     def draw(self):
-        return 'p'
+        return self.color+'p'
 
 
 class King(Piece):
@@ -98,7 +98,7 @@ class King(Piece):
         return [(1,0), (1,1), (0, 1), (-1,1), (-1,0), (-1,-1), (0,-1), (1,-1)]
 
     def draw(self):
-        return 'k'
+        return self.color+'k'
 
 
 class Queen(Piece):
@@ -112,7 +112,7 @@ class Queen(Piece):
     #     return Rook.get_available_squares(self, col, row) + Bishop.get_available_squares(self, col, row)
 
     def draw(self):
-        return 'q'
+        return self.color+'q'
 
     def get_directions(self):
         return King.get_directions(self)
@@ -139,7 +139,7 @@ class Rook(Piece):
         return [(1,0), (0,1), (-1, 0), (0, -1)] #UP, RIGHT, DOWN, LEFT
 
     def draw(self):
-        return 'r'
+        return self.color+'r'
 
 
 class Bishop(Piece):
@@ -168,7 +168,7 @@ class Bishop(Piece):
         return [(1,1), (-1,1), (-1, -1), (1, -1)] #UR, LR, LL, UL
 
     def draw(self):
-        return 'b'
+        return self.color+'b'
 
 
 class Knight(Piece):
@@ -210,11 +210,12 @@ class Knight(Piece):
 
     #     return res
 
-    def get_directions(self):
+    @staticmethod
+    def get_directions():
         return [(2,1), (1,2), (-1,2), (-2,1), (-2,-1), (-1,-2), (1,-2), (2, -1)]
 
     def draw(self):
-        return 's'
+        return self.color+'s'
 
 
 

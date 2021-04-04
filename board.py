@@ -50,13 +50,21 @@ class Board:
                 self.white_king = (t_row, t_col)
 
         piece = s_square.remove_piece()
+        
+        
+        curr_move = move.Move(piece, s_col, s_row, t_col, t_row, self.board[t_row][t_col].piece)
+        
         self.board[t_row][t_col].place_piece(piece)
+                
+        self.move_history.append(curr_move)
+
+
 
     def print_board(self):
         for i in range(8):
             for j in range(8):
                 if self.board[i][j].piece is None:
-                    print("o", " ", end = "")
+                    print("oo", ' ', end = "")
                 else:
                     print(self.board[i][j].piece.draw(), " ", end = "")
             print('\n')
@@ -79,13 +87,17 @@ class Board:
                 if multip%7 == 6 or multip%7 == 1 and self.board[2*multip+row][col].is_empty() and not self.discovers_check((multip*2, 0), col, row):
                     res.append((row+multip*2, col))
 
-            curr_square = self.board[multip+row][col-1]
-            if col-1 > -1 and not curr_square.is_empty() and curr_square.piece.color != piece.color and not self.discovers_check((multip, -1), col, row):
-                res.append((multip+row, col-1))
+            
+            if col-1 > -1:
+                curr_square = self.board[multip+row][col-1]
+                if not curr_square.is_empty() and curr_square.piece.color != piece.color and not self.discovers_check((multip, -1), col, row):
+                    res.append((multip+row, col-1))
 
-            curr_square = self.board[multip+row][col+1]
-            if col+1 < 8 and not curr_square.is_empty() and curr_square.piece.color != piece.color and not self.discovers_check((multip, 1), col, row):
-                res.append((multip+row, col+1))
+            
+            if col+1 < 8:
+                curr_square = self.board[multip+row][col+1]
+                if not curr_square.is_empty() and curr_square.piece.color != piece.color and not self.discovers_check((multip, 1), col, row):
+                    res.append((multip+row, col+1))
 
             en_passant = piece.get_en_passant()
 
@@ -98,23 +110,28 @@ class Board:
 
         if isinstance(piece, pieces.King):
             for el in directions:
-                curr_square = self.board[row+el[0]][col+el[1]]
-                if row+el[0] > -1 and row+el[0] < 8 and col+el[1] > -1 and col+el[1] < 8 \
-                      and (curr_square.is_empty() or curr_square.piece.color != piece.color) and not self.discovers_check(el, col, row):
-                      res.append((el[0]+row, el[1]+col))
+                
+                if row+el[0] > -1 and row+el[0] < 8 and col+el[1] > -1 and col+el[1] < 8:
+                    curr_square = self.board[row+el[0]][col+el[1]]
+                    if (curr_square.is_empty() or curr_square.piece.color != piece.color) and not self.discovers_check(el, col, row):
+                        res.append((el[0]+row, el[1]+col))
 
         elif isinstance(piece, pieces.Knight):
             for el in directions:
-                curr_square = self.board[row+el[0]][col+el[1]]
-                if row+el[0] > -1 and row+el[0] < 8 and col+el[1] > -1 and col+el[1] < 8 \
-                    and (curr_square.is_empty() or curr_square.piece.color != piece.color) and not self.discovers_check(el, col, row):
-                    res.append((row+el[0], col+el[1]))
+                
+                if row+el[0] > -1 and row+el[0] < 8 and col+el[1] > -1 and col+el[1] < 8:
+                    curr_square = self.board[row+el[0]][col+el[1]]
+                    if (curr_square.is_empty() or curr_square.piece.color != piece.color) and not self.discovers_check(el, col, row):
+                        res.append((row+el[0], col+el[1]))
         else:
             for el in directions:
-                if not self.discovers_check(el, col, row):
+                i = row+el[0]
+                j = col+el[1]
+
+                if i > -1 and i < 8 and j > -1 and j < 8 and not self.discovers_check(el, col, row):
                     
-                    i = row+el[0]
-                    j = col+el[1]
+                    # i = row+el[0]
+                    # j = col+el[1]
                     
                     while i > -1 and i < 8 and j > -1 and j < 8 and self.board[i][j].is_empty():
                         res.append((i,j))
@@ -134,66 +151,103 @@ class Board:
             pos = self.white_king
 
         for i in range(pos[0]+1, 8):
-            if self.board[i][pos[1]].piece.color == color:
+            curr_square = self.board[i][pos[1]]
+            
+            if not curr_square.is_empty():
+                if curr_square.piece.color == color:
+                    break
+                elif isinstance(curr_square.piece, pieces.Queen) or isinstance(curr_square.piece, pieces.Rook):
+                    return True
                 break
-            elif isinstance(self.board[i][pos[1]].piece, pieces.Queen) or isinstance(self.board[i][pos[1]].piece, pieces.Rook):
-                return True
             
         for i in range(pos[0]-1, -1, -1):
-            if self.board[i][pos[1]].piece.color == color:
+            curr_square = self.board[i][pos[1]]
+
+            if not curr_square.is_empty():
+                if curr_square.piece.color == color:
+                    break
+                elif isinstance(curr_square.piece, pieces.Queen) or isinstance(curr_square.piece, pieces.Rook):
+                    return True
                 break
-            elif isinstance(self.board[i][pos[1]].piece, pieces.Queen) or isinstance(self.board[i][pos[1]].piece, pieces.Rook):
-                return True
             
         for i in range(pos[1]+1, 8):
-            if self.board[pos[0]][i].piece.color == color:
+            curr_square = self.board[pos[0]][i]
+
+            if not curr_square.is_empty():
+                if curr_square.piece.color == color:
+                    break
+                elif isinstance(curr_square.piece, pieces.Queen) or isinstance(curr_square.piece, pieces.Rook):
+                    return True
                 break
-            elif isinstance(self.board[pos[0]][i].piece, pieces.Queen) or isinstance(self.board[pos[0]][i].piece, pieces.Rook):
-                return True
 
         for i in range(pos[1]-1, -1, -1):
-            if self.board[pos[0]][i].piece.color == color:
+            curr_square = self.board[pos[0]][i]
+
+            if not curr_square.is_empty():
+                if self.board[pos[0]][i].piece.color == color:
+                    break
+                elif isinstance(self.board[pos[0]][i].piece, pieces.Queen) or isinstance(self.board[pos[0]][i].piece, pieces.Rook):
+                    return True
                 break
-            elif isinstance(self.board[pos[0]][i].piece, pieces.Queen) or isinstance(self.board[pos[0]][i].piece, pieces.Rook):
-                return True
                     
             
             #DIAGONAL
 
         j = 1
         while pos[0]-j > -1 and pos[1]+j < 8:
-            if self.board[pos[0]-j][pos[1]+j].piece.color == color:
-                break
-            elif j == 1 and color == 'w' and isinstance(self.board[pos[0]-1][pos[1]+1].piece, pieces.Pawn):
-                return True
-            elif isinstance(self.board[pos[0]-j][pos[1]+j].piece, pieces.Bishop) or isinstance(self.board[pos[0]-j][pos[1]+j].piece, pieces.Queen):
-                return True
+            curr_square = self.board[pos[0]-j][pos[1]+j]
+
+            if not curr_square.is_empty():
+                if curr_square.piece.color == color:
+                    break
+                elif j == 1 and color == 'w' and isinstance(curr_square.piece, pieces.Pawn):
+                    return True
+                elif isinstance(curr_square.piece, pieces.Bishop) or isinstance(curr_square.piece, pieces.Queen):
+                    return True
+                break#####
+            j+=1
+
         j = 1
         while pos[0]+j < 8 and pos[1]+j < 8:
-            if self.board[pos[0]+j][pos[1]+j].piece.color == color:
-                break
-            elif j == 1 and color == 'b' and isinstance(self.board[pos[0]+1][pos[1]+1].piece, pieces.Pawn):
-                return True
-            elif isinstance(self.board[pos[0]-j][pos[1]+j].piece, pieces.Bishop) or isinstance(self.board[pos[0]-j][pos[1]+j].piece, pieces.Queen):
-                return True
+            curr_square = self.board[pos[0]+j][pos[1]+j]
+
+            if not curr_square.is_empty():
+                if curr_square.piece.color == color:
+                    break
+                elif j == 1 and color == 'b' and isinstance(curr_square.piece, pieces.Pawn):
+                    return True
+                elif isinstance(curr_square.piece, pieces.Bishop) or isinstance(curr_square.piece, pieces.Queen):
+                    return True
+                break#####
+            j+=1
+        
         j = 1
         while pos[0]+j < 8 and pos[1]-j > -1:
-            if self.board[pos[0]+j][pos[1]-j].piece.color == color:
-                break
-            elif j == 1 and color == 'b' and isinstance(self.board[pos[0]+1][pos[1]-1].piece, pieces.Pawn):
-                return True
-            elif isinstance(self.board[pos[0]-j][pos[1]-j].piece, pieces.Bishop) or isinstance(self.board[pos[0]-j][pos[1]-j].piece, pieces.Queen):
-                return True
+            curr_square = self.board[pos[0]+j][pos[1]-j]
+            
+            if not curr_square.is_empty():
+                if curr_square.piece.color == color:
+                    break
+                elif j == 1 and color == 'b' and isinstance(curr_square.piece, pieces.Pawn):
+                    return True
+                elif isinstance(curr_square.piece, pieces.Bishop) or isinstance(curr_square.piece, pieces.Queen):
+                    return True
+                break#####
+            j+=1
             
         j = 1
         while pos[0]-j > -1 and pos[1]-j > -1:
-            if self.board[pos[0]-j][pos[1]-j].piece.color == color:
-                break
-            elif j == 1 and color == 'w' and isinstance(self.board[pos[0]-1][pos[1]-1].piece, pieces.Pawn):
-                return True
-            elif isinstance(self.board[pos[0]-j][pos[1]-j].piece, pieces.Bishop) or isinstance(self.board[pos[0]-j][pos[1]-j].piece, pieces.Queen):
-                return True
+            curr_square = self.board[pos[0]-j][pos[1]-j]
 
+            if not curr_square.is_empty():
+                if curr_square.piece.color == color:
+                    break
+                elif j == 1 and color == 'w' and isinstance(curr_square.piece, pieces.Pawn):
+                    return True
+                elif isinstance(curr_square.piece, pieces.Bishop) or isinstance(curr_square.piece, pieces.Queen):
+                    return True
+                break#####
+            j+=1
 
         possible_knights = pieces.Knight.get_directions()
 
@@ -213,6 +267,8 @@ class Board:
         self.move_piece(col, row, col+dir[1], row+dir[0])
         is_check = self.is_in_check(color)
         
+        print(self.white_king)
+
         self.reverse_move()
         
         return is_check
@@ -234,5 +290,15 @@ if __name__ == '__main__':
     b = Board()
     b.place_pieces()
     b.print_board()
-    b.move_piece(0,0, 4, 5)
+    #print(b.board[5][4].is_empty())
+    #print(b.board[6][0].piece)
+    #b.move_piece(4,7, 4,3)
+    #print(b.board[3][4].piece)
+    #print(b.get_legal_moves(4,3))
+    
+    b.board[6][4].remove_piece()
+    #b.move_piece(3,7,4,4)
+    b.move_piece(3,0,4,1)
+    print(b.get_legal_moves(3,7))
+
     b.print_board()

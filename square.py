@@ -11,4 +11,7 @@ class Square:
         return temp
 
     def is_empty(self):
-        return self.piece
+        if self.piece is None:
+            return True
+        return False
+        #return self.piece
