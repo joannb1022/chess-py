@@ -59,6 +59,38 @@ class Board:
         self.move_history.append(curr_move)
 
 
+    def get_squares_in_between(self, pos1, pos2):
+        res = []
+
+        if pos1[0] == pos2[0]:
+            i, j = min(pos1[1], pos2[1])+1, max(pos1[1], pos2[1])
+            while i != j:
+                res.append((pos1[0], i))
+                i+=1
+
+        elif pos1[1] == pos2[1]:
+            i, j = min(pos1[0], pos2[0])+1, max(pos1[0], pos2[0])
+            while i != j:
+                res.append((i, pos1[1]))
+                i+=1
+        
+        elif abs(pos1[0] - pos2[0]) == abs(pos1[1] - pos2[1]):
+            if pos1[0] > pos2[0]:
+                pos1, pos2 = pos2, pos1
+
+            if pos1[1] < pos2[1]:
+                curr = (pos1[0]+1, pos1[1]+1)
+                
+                while curr[1] < pos2[1]:
+                    res.append(curr)
+                    curr = (curr[0]+1, curr[1]+1)
+            else:
+                curr = (pos1[0]+1, pos1[1]-1)
+                while curr[1] > pos2[1]:
+                    res.append(curr)
+                    curr = (curr[0]+1, curr[1]-1)
+        return res
+            
 
     def print_board(self):
         for i in range(8):
@@ -144,11 +176,13 @@ class Board:
         return res
 
 
-    def is_in_check(self, color):
-        if color == 'b':
-            pos = self.black_king
-        else:
-            pos = self.white_king
+    def is_in_check(self, color, res = None, pos = None):
+        
+        if pos is None:
+            if color == 'b':
+                pos = self.black_king
+            else:
+                pos = self.white_king
 
         for i in range(pos[0]+1, 8):
             curr_square = self.board[i][pos[1]]
@@ -157,7 +191,10 @@ class Board:
                 if curr_square.piece.color == color:
                     break
                 elif isinstance(curr_square.piece, pieces.Queen) or isinstance(curr_square.piece, pieces.Rook):
-                    return True
+                    if res is not None:
+                        res.append((i, pos[1]))
+                    else:
+                        return True
                 break
             
         for i in range(pos[0]-1, -1, -1):
@@ -167,7 +204,10 @@ class Board:
                 if curr_square.piece.color == color:
                     break
                 elif isinstance(curr_square.piece, pieces.Queen) or isinstance(curr_square.piece, pieces.Rook):
-                    return True
+                    if res is not None:
+                        res.append((i, pos[1]))
+                    else:
+                        return True
                 break
             
         for i in range(pos[1]+1, 8):
@@ -177,7 +217,10 @@ class Board:
                 if curr_square.piece.color == color:
                     break
                 elif isinstance(curr_square.piece, pieces.Queen) or isinstance(curr_square.piece, pieces.Rook):
-                    return True
+                    if res is not None:
+                        res.append((pos[0], i))
+                    else:
+                        return True
                 break
 
         for i in range(pos[1]-1, -1, -1):
@@ -187,7 +230,10 @@ class Board:
                 if self.board[pos[0]][i].piece.color == color:
                     break
                 elif isinstance(self.board[pos[0]][i].piece, pieces.Queen) or isinstance(self.board[pos[0]][i].piece, pieces.Rook):
-                    return True
+                    if res is not None:
+                        res.append((pos[0], i))
+                    else:
+                        return True
                 break
                     
             
@@ -200,10 +246,11 @@ class Board:
             if not curr_square.is_empty():
                 if curr_square.piece.color == color:
                     break
-                elif j == 1 and color == 'w' and isinstance(curr_square.piece, pieces.Pawn):
-                    return True
-                elif isinstance(curr_square.piece, pieces.Bishop) or isinstance(curr_square.piece, pieces.Queen):
-                    return True
+                elif j == 1 and color == 'w' and isinstance(curr_square.piece, pieces.Pawn) or (isinstance(curr_square.piece, pieces.Bishop) or isinstance(curr_square.piece, pieces.Queen)):
+                    if res is not None:
+                        res.append((pos[0]-j, pos[1]+j))
+                    else:
+                        return True
                 break#####
             j+=1
 
@@ -214,10 +261,11 @@ class Board:
             if not curr_square.is_empty():
                 if curr_square.piece.color == color:
                     break
-                elif j == 1 and color == 'b' and isinstance(curr_square.piece, pieces.Pawn):
-                    return True
-                elif isinstance(curr_square.piece, pieces.Bishop) or isinstance(curr_square.piece, pieces.Queen):
-                    return True
+                elif j == 1 and color == 'b' and isinstance(curr_square.piece, pieces.Pawn) or (isinstance(curr_square.piece, pieces.Bishop) or isinstance(curr_square.piece, pieces.Queen)):
+                    if res is not None:
+                        res.append((pos[0]+j, pos[1]+j))
+                    else:
+                        return True
                 break#####
             j+=1
         
@@ -228,10 +276,11 @@ class Board:
             if not curr_square.is_empty():
                 if curr_square.piece.color == color:
                     break
-                elif j == 1 and color == 'b' and isinstance(curr_square.piece, pieces.Pawn):
-                    return True
-                elif isinstance(curr_square.piece, pieces.Bishop) or isinstance(curr_square.piece, pieces.Queen):
-                    return True
+                elif j == 1 and color == 'b' and isinstance(curr_square.piece, pieces.Pawn) or (isinstance(curr_square.piece, pieces.Bishop) or isinstance(curr_square.piece, pieces.Queen)):
+                    if res is not None:
+                        res.append((pos[0]+j, pos[1]-j))
+                    else:
+                        return True
                 break#####
             j+=1
             
@@ -242,19 +291,26 @@ class Board:
             if not curr_square.is_empty():
                 if curr_square.piece.color == color:
                     break
-                elif j == 1 and color == 'w' and isinstance(curr_square.piece, pieces.Pawn):
-                    return True
-                elif isinstance(curr_square.piece, pieces.Bishop) or isinstance(curr_square.piece, pieces.Queen):
-                    return True
+                elif j == 1 and color == 'w' and isinstance(curr_square.piece, pieces.Pawn) or (isinstance(curr_square.piece, pieces.Bishop) or isinstance(curr_square.piece, pieces.Queen)):
+                    if res is not None:
+                        res.append((pos[0]-j, pos[1]-j))
+                    else:
+                        return True
                 break#####
             j+=1
 
         possible_knights = pieces.Knight.get_directions()
-
+    
         for el in possible_knights:
             if pos[0] + el[0] > -1 and pos[0] + el[0] < 8 and pos[1] + el[1] > -1 and pos[1] + el[1] < 8 \
-                and isinstance(self.board[el[0]][el[1]].piece, pieces.Knight) and self.board[el[0]][el[1]].piece.color != color:
-                return True
+                and isinstance(self.board[pos[0]+el[0]][pos[1]+el[1]].piece, pieces.Knight) and self.board[pos[0]+el[0]][pos[1]+el[1]].piece.color != color:
+                if res is not None:
+                    res.append((pos[0]+el[0], pos[1]+el[1]))
+                else:
+                    return True
+
+        if res is not None and len(res) > 0:
+            return True
 
         return False
         
@@ -271,7 +327,71 @@ class Board:
 
         self.reverse_move()
         
+        print(self.white_king)
+
         return is_check
+
+
+    def is_checkmate(self, color):
+        attackers = []
+        
+        if color == 'w':
+            pos = self.white_king
+        else:
+            pos = self.black_king
+
+
+        if self.is_in_check(color, res = attackers):
+            #king_moves = self.get_legal_moves(pos[1], pos[0])
+            
+            if self.get_legal_moves(pos[1], pos[0]):
+                return False
+
+            if len(attackers) == 2:
+                return True
+
+            else:
+                if color == 'w':
+                    color2 = 'b'
+                else:
+                    color2 = 'w'
+
+                attackers2 = []
+
+                print(attackers)
+                opponent_piece = attackers[0]
+
+                self.is_in_check(color2, res = attackers2, pos = opponent_piece)
+
+                for el in attackers2:
+
+                    direction = (opponent_piece[0]-el[0], opponent_piece[1]-el[1])
+                    print(attackers2)
+                    print(el[0], el[1])
+                    if not self.discovers_check(direction, el[1], el[0]):
+                        return False
+
+                if isinstance(self.board[opponent_piece[0]][opponent_piece[1]].piece, pieces.Knight):
+                    return True
+
+                squares_under_check = self.get_squares_in_between(opponent_piece, pos)
+
+                for el in squares_under_check:
+                    
+                    #figury mogące zablokować szachowane pole
+                    attackers3 = []
+
+                    if self.is_in_check(color2, attackers3, el):
+                        for piece in attackers3:
+                            direction = (el[0]-piece[0], el[1]-piece[1])
+
+                            if not self.discovers_check(direction, piece[1], piece[0]):
+                                print("Piece: ", piece, "in dir", direction)
+                                return False                            
+
+        return True
+
+
 
 
     def reverse_move(self):
@@ -289,16 +409,31 @@ class Board:
 if __name__ == '__main__':
     b = Board()
     b.place_pieces()
-    b.print_board()
-    #print(b.board[5][4].is_empty())
-    #print(b.board[6][0].piece)
-    #b.move_piece(4,7, 4,3)
-    #print(b.board[3][4].piece)
-    #print(b.get_legal_moves(4,3))
     
-    b.board[6][4].remove_piece()
-    #b.move_piece(3,7,4,4)
-    b.move_piece(3,0,4,1)
-    print(b.get_legal_moves(3,7))
+    
+    b.move_piece(3,0, 4, 6)
+    b.move_piece(2,0, 0, 2)
+    #b.board[6][4].remove_piece()
 
     b.print_board()
+
+    res = []
+    b.is_in_check('w', res, (7,4))
+    print(res)
+
+    b.move_piece(1,6,3,7)
+    b.move_piece(6,6, 5,7)
+    b.move_piece(2,6, 6,7)
+
+    b.print_board()
+    print(b.is_checkmate('w'))
+
+
+    # b.board[6][4].remove_piece()
+    # b.move_piece(3,0, 4, 6)
+    # b.move_piece(2,0, 0, 2)
+    # b.move_piece(7,7, 5,7)
+    # b.move_piece(0,7,3,7)
+    # b.board[7][6].remove_piece()
+    # b.print_board()
+    # print(b.is_checkmate('w'))

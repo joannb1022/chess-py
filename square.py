@@ -15,3 +15,8 @@ class Square:
             return True
         return False
         #return self.piece
+
+    def get(self):
+        return self.piece
+
+    
