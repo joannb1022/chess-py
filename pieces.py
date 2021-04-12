@@ -3,6 +3,7 @@ import itertools
 class Piece:
     def __init__(self, color):
         self.color = color
+        self.can_castle = True
         #self.position = (None, None) 
 
 
@@ -62,6 +63,7 @@ class Pawn(Piece):
 class King(Piece):
     def __init__(self, color):
         Piece.__init__(self, color)
+        self.can_castle = True
 
     def can_reach(self, s_col, s_row, t_col, t_row):
         return (abs(s_col - t_col) == 1 and abs(s_row - t_row) == 1)\
@@ -120,6 +122,7 @@ class Queen(Piece):
 class Rook(Piece):
     def __init__(self, color):
         Piece.__init__(self, color)
+        self.can_castle = True
 
     def can_reach(self, s_col, s_row, t_col, t_row):
         return s_col == t_col or s_row == t_row

@@ -50,24 +50,38 @@ class Board:
             self.board[6][i].place_piece(pieces.Pawn('w'))
 
 
-    def move_piece(self, s_col, s_row, t_col, t_row):
+    def move_piece(self, s_pos, t_pos, real_move = False):
 
-        s_square = self.board[s_row][s_col]
+        s_square = self.board[s_pos[0]][s_pos[1]]
 
         if isinstance(s_square.piece, pieces.King):
             if s_square.piece.color == 'b':
-                self.black_king = (t_row, t_col)
+                self.black_king = (t_pos[0], t_pos[1])
             else:
-                self.white_king = (t_row, t_col)
+                self.white_king = (t_pos[0], t_pos[1])
+            
+            if abs(s_pos[1]-t_pos[1]) == 2:
+                direction = t_pos[1]-s_pos[1]/2
+                if direction == -1:
+                    column = 0
+                else:
+                    column = 7
+                
+                rook = self.board[t_pos[0]][column].remove_piece()
+                self.board[t_pos[0]][t_pos[1]-direction].place_piece(rook)
+                
 
         piece = s_square.remove_piece()
 
 
-        curr_move = move.Move(piece, s_col, s_row, t_col, t_row, self.board[t_row][t_col].piece)
+        curr_move = move.Move(piece, s_pos, t_pos, self.board[t_pos[0]][t_pos[1]].piece)
 
-        self.board[t_row][t_col].place_piece(piece)
+        self.board[t_pos[0]][t_pos[1]].place_piece(piece)
 
         self.move_history.append(curr_move)
+
+        if real_move:
+            piece.can_castle = False
 
 
     def get_squares_in_between(self, pos1, pos2):
@@ -139,7 +153,7 @@ class Board:
             if pos[1]+1 < 8:
                 curr_square = self.board[multip+pos[0]][pos[1]+1]
                 if not curr_square.is_empty() and curr_square.piece.color != piece.color and not self.discovers_check((multip, 1), pos):
-                    res.append((multip+pos[0], col+1))
+                    res.append((multip+pos[0], pos[1]+1))
 
             en_passant = piece.get_en_passant()
 
@@ -159,6 +173,11 @@ class Board:
                     if (curr_square.is_empty() or curr_square.piece.color != piece.color) and not self.discovers_check(el, pos):
 
                         res.append((el[0]+pos[0], el[1]+pos[1]))
+
+            if self.check_castling(pos, 1):
+                res.append((pos[0], pos[1]+2))
+            if self.check_castling(pos, -1):
+                res.append((pos[0], pos[1]-2))
 
 
         elif isinstance(piece, pieces.Knight):
@@ -190,6 +209,30 @@ class Board:
                         res.append((i,j))
 
         return res
+
+    def check_castling(self, king_pos, direction):
+        
+        king = self.board[king_pos[0]][king_pos[1]].piece
+
+        if not king.can_castle or self.king_in_check[king.color] != Checked_by.NONE:
+            return False
+        
+        if direction == 1:
+            column = 7
+        else:
+            column = 0
+
+        if not self.board[king_pos[0]][column].piece.can_castle:
+            return False
+            
+        squares_in_between = self.get_squares_in_between(king_pos, (king_pos[0], column))
+            
+        for el in squares_in_between:
+            if el.piece is not None:
+                return False
+
+        return self.is_in_check(king.color, pos = (king_pos[0], king_pos[1]+direction)) and self.is_in_check(king.color, pos = (king_pos[0], king_pos[1]+2*direction))
+
 
 
     def is_in_check(self, color, res = None, pos = None, pawn_kill = True):
@@ -345,7 +388,7 @@ class Board:
     def discovers_check(self, dir,pos):
         color = self.board[pos[0]][pos[1]].piece.color
 
-        self.move_piece(pos[1], pos[0], pos[1]+dir[1], pos[0]+dir[0])
+        self.move_piece(pos, (pos[0]+dir[0], pos[1]+dir[1]))
         is_check = self.is_in_check(color)
 
         # print(self.white_king)
@@ -356,9 +399,12 @@ class Board:
 
         return is_check
 
-    def is_checkmate(self, color):
-        #attackers = [] #figury atakujace krola (max 2)
 
+    def is_checkmate(self, color):
+        
+        #czyszczenie tablicy figur atakujących króla w przypadku wykonania ruchu przez gracza
+        self.attackers = []
+        
         if color == 'w':
             pos = self.white_king
         else:
@@ -494,7 +540,7 @@ class Board:
 
         hist = self.move_history[-1]
 
-        self.move_piece(hist.end_pos[1], hist.end_pos[0], hist.start_pos[1], hist.start_pos[0])
+        self.move_piece(hist.end_pos, hist.start_pos)
         self.board[hist.end_pos[0]][hist.end_pos[1]].place_piece(hist.taken_piece)
         self.move_history.pop()
 
@@ -512,9 +558,10 @@ if __name__ == '__main__':
     # #b.board[7][3].remove_piece()
     # b.board[7][5].remove_piece()
 
-    b.move_piece(3,0, 4,1)
+    b.move_piece((0,3), (2,4), True)
     b.board[6][4].remove_piece()
-    b.is_checkmate('w')
+    b.move_piece((6,7), (7,5), True)
+    #b.is_checkmate('w')
     print("Moves: ", b.get_moves_in_check((7,3)))
     print(b.king_in_check['w'])
 
