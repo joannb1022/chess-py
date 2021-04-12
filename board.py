@@ -113,8 +113,8 @@ class Board:
             print('\n')
 
 
-    def get_legal_moves(self, col, row):
-        piece = self.board[row][col].piece
+    def get_legal_moves(self,pos):
+        piece = self.board[pos[0]][pos[1]].piece
 
         res = []
 
@@ -124,22 +124,22 @@ class Board:
             else:
                 multip = -1
 
-            if self.board[multip+row][col].is_empty() and not self.discovers_check((multip, 0), col, row):
-                res.append((row+multip,col))
-                if multip%7 == 6 or multip%7 == 1 and self.board[2*multip+row][col].is_empty() and not self.discovers_check((multip*2, 0), col, row):
-                    res.append((row+multip*2, col))
+            if self.board[multip+pos[0]][pos[1]].is_empty() and not self.discovers_check((multip, 0), pos):
+                res.append((pos[0]+multip,pos[1]))
+                if multip%7 == 6 or multip%7 == 1 and self.board[2*multip+pos[0]][pos[1]].is_empty() and not self.discovers_check((multip*2, 0), pos):
+                    res.append((pos[0]+multip*2, pos[1]))
 
 
-            if col-1 > -1:
-                curr_square = self.board[multip+row][col-1]
-                if not curr_square.is_empty() and curr_square.piece.color != piece.color and not self.discovers_check((multip, -1), col, row):
-                    res.append((multip+row, col-1))
+            if pos[1]-1 > -1:
+                curr_square = self.board[multip+pos[0]][pos[1]-1]
+                if not curr_square.is_empty() and curr_square.piece.color != piece.color and not self.discovers_check((multip, -1), pos):
+                    res.append((multip+pos[0], pos[1]-1))
 
 
-            if col+1 < 8:
-                curr_square = self.board[multip+row][col+1]
-                if not curr_square.is_empty() and curr_square.piece.color != piece.color and not self.discovers_check((multip, 1), col, row):
-                    res.append((multip+row, col+1))
+            if pos[1]+1 < 8:
+                curr_square = self.board[multip+pos[0]][pos[1]+1]
+                if not curr_square.is_empty() and curr_square.piece.color != piece.color and not self.discovers_check((multip, 1), pos):
+                    res.append((multip+pos[0], col+1))
 
             en_passant = piece.get_en_passant()
 
@@ -153,24 +153,33 @@ class Board:
         if isinstance(piece, pieces.King):
             for el in directions:
 
-                if row+el[0] > -1 and row+el[0] < 8 and col+el[1] > -1 and col+el[1] < 8:
-                    curr_square = self.board[row+el[0]][col+el[1]]
-                    if (curr_square.is_empty() or curr_square.piece.color != piece.color) and not self.discovers_check(el, col, row):
-                        res.append((el[0]+row, el[1]+col))
+                if pos[0]+el[0] > -1 and pos[0]+el[0] < 8 and pos[1]+el[1] > -1 and pos[1]+el[1] < 8:
+                    curr_square = self.board[pos[0]+el[0]][pos[1]+el[1]]
+
+                    if (curr_square.is_empty() or curr_square.piece.color != piece.color) and not self.discovers_check(el, pos):
+
+                        res.append((el[0]+pos[0], el[1]+pos[1]))
+
 
         elif isinstance(piece, pieces.Knight):
             for el in directions:
 
-                if row+el[0] > -1 and row+el[0] < 8 and col+el[1] > -1 and col+el[1] < 8:
-                    curr_square = self.board[row+el[0]][col+el[1]]
-                    if (curr_square.is_empty() or curr_square.piece.color != piece.color) and not self.discovers_check(el, col, row):
-                        res.append((row+el[0], col+el[1]))
+                if pos[0]+el[0] > -1 and pos[0]+el[0] < 8 and pos[1]+el[1] > -1 and pos[1]+el[1] < 8:
+
+                    curr_square = self.board[pos[0]+el[0]][pos[1]+el[1]]
+
+                    if (curr_square.is_empty() or curr_square.piece.color != piece.color) and not self.discovers_check(el, pos):
+
+                        res.append((pos[0]+el[0], pos[1]+el[1]))
+
         else:
             for el in directions:
-                i = row+el[0]
-                j = col+el[1]
+                i = pos[0]+el[0]
 
-                if i > -1 and i < 8 and j > -1 and j < 8 and not self.discovers_check(el, col, row):
+                j = pos[1]+el[1]
+
+                if i > -1 and i < 8 and j > -1 and j < 8 and not self.discovers_check(el,pos):
+
 
                     while i > -1 and i < 8 and j > -1 and j < 8 and self.board[i][j].is_empty():
                         res.append((i,j))
@@ -225,7 +234,7 @@ class Board:
                         res.append((i, pos[1]))
                     else:
                         return True
-                
+
                 break
 
         for i in range(pos[1]+1, 8):
@@ -333,12 +342,10 @@ class Board:
         return False
 
 
+    def discovers_check(self, dir,pos):
+        color = self.board[pos[0]][pos[1]].piece.color
 
-    def discovers_check(self, dir, col, row):
-
-        color = self.board[row][col].piece.color
-
-        self.move_piece(col, row, col+dir[1], row+dir[0])
+        self.move_piece(pos[1], pos[0], pos[1]+dir[1], pos[0]+dir[0])
         is_check = self.is_in_check(color)
 
         # print(self.white_king)
@@ -348,7 +355,6 @@ class Board:
         # print(self.white_king)
 
         return is_check
-
 
     def is_checkmate(self, color):
         #attackers = [] #figury atakujace krola (max 2)
@@ -368,13 +374,14 @@ class Board:
         """
 
         if self.is_in_check(color, res = self.attackers):
-            #king_moves = self.get_legal_moves(pos[1], pos[0])
+            #king_moves = self.get_legal_moves(pos)
 
-            if self.get_legal_moves(pos[1], pos[0]):
+            if self.get_legal_moves(pos):
                return False
 
             if len(self.attackers) == 2:
                 self.king_in_check[color] = Checked_by.TWO
+                print(self.attackers)
                 print("dwie atakuja")
                 return True
 
@@ -410,7 +417,7 @@ class Board:
 
                     #dla kazdej figury z attackers2 nalezy sprawdzic, czy kiedy zabijemy nia opponent_piece, nie bedzie nadal szacha
                     direction = (opponent_piece[0]-el[0], opponent_piece[1]-el[1])
-                    if not self.discovers_check(direction, el[1], el[0]):
+                    if not self.discovers_check(direction, el):
                         return False
 
                 if isinstance(self.board[opponent_piece[0]][opponent_piece[1]].piece, pieces.Knight):
@@ -438,7 +445,7 @@ class Board:
                         for piece in attackers3:
                             direction = (el[0]-piece[0], el[1]-piece[1])
 
-                            if not self.discovers_check(direction, piece[1], piece[0]):
+                            if not self.discovers_check(direction, piece):
                                 print("Piece: ", piece, "in dir", direction)
                                 return False
 
@@ -455,21 +462,21 @@ class Board:
             if not isinstance(piece, pieces.King):
                 return res
             else:
-                return self.get_legal_moves(pos[1], pos[0])
+                return self.get_legal_moves(pos)
 
-        legal_moves = self.get_legal_moves(pos[1], pos[0])
+        legal_moves = self.get_legal_moves(pos)
 
         if self.king_in_check[piece.color] == Checked_by.KNIGHT:
             if isinstance(piece, pieces.King):
-                return self.get_legal_moves(pos[1], pos[0])
+                return self.get_legal_moves(pos)
             else:
                 if pos in legal_moves: #####
                     return pos
-            
+
         elif self.king_in_check[piece.color] == Checked_by.ONE:
             if isinstance(piece, pieces.King):
-                return self.get_legal_moves(pos[1], pos[0])
-            
+                return self.get_legal_moves(pos)
+
             if piece.color == 'w':
                 squares_in_check = self.get_squares_in_between(self.white_king, self.attackers[0])
             else:
