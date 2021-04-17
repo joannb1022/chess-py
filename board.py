@@ -66,17 +66,17 @@ class Board:
                 self.black_king = (t_pos[0], t_pos[1])
             else:
                 self.white_king = (t_pos[0], t_pos[1])
-            
+
             if abs(s_pos[1]-t_pos[1]) == 2:
                 direction = t_pos[1]-s_pos[1]/2
                 if direction == -1:
                     column = 0
                 else:
                     column = 7
-                
+
                 rook = self.board[t_pos[0]][column].remove_piece()
                 self.board[t_pos[0]][t_pos[1]-direction].place_piece(rook)
-        
+
         elif isinstance(s_square.piece, pieces.Pawn):
             if real_move:
                 s_square.piece.en_passant_decreasing = False
@@ -86,10 +86,10 @@ class Board:
             if abs(t_pos[0]-s_pos[0]) == 2:
                 if t_pos[1] > 0:
                     p_square = self.board[t_pos[0]][t_pos[1]-1]
-                    
+
                     if p_square.piece is not None and p_square.piece.color != s_square.piece.color:
                         p_square.piece.en_passant_increasing = True
-                        self.en_passant.append((t_pos[0], t_pos[1]-1)) 
+                        self.en_passant.append((t_pos[0], t_pos[1]-1))
 
                 if t_pos[1] < 7:
                     p_square = self.board[t_pos[0]][t_pos[1]+1]
@@ -97,10 +97,10 @@ class Board:
                     if p_square.piece is not None and p_square.piece.color != s_square.piece.color:
                         p_square.piece.en_passant_decreasing = True
                         self.en_passant.append((t_pos[0], t_pos[1]+1))
-            
-            elif s_square.piece.en_passant_increasing and t_pos[1]-s_pos[1] == 1:
+
+            elif s_square.piece.en_passant_increasing and t_pos[1]-s_pos[1] == 1 and real_move:
                 self.board[s_pos[0]][t_pos[1]].remove_piece()
-            elif s_square.piece.en_passant_decreasing and t_pos[1]-s_pos[1] == -1:
+            elif s_square.piece.en_passant_decreasing and t_pos[1]-s_pos[1] == -1 and real_move:
                 self.board[s_pos[0]][t_pos[1]].remove_piece()
 
         piece = s_square.remove_piece()
@@ -175,7 +175,7 @@ class Board:
                 res.append((pos[0]+multip,pos[1]))
                 if piece.can_move_two and pos[0]%7 == 6 or pos[0]%7 == 1 and self.board[2*multip+pos[0]][pos[1]].is_empty() and not self.discovers_check((multip*2, 0), pos):
                     res.append((pos[0]+multip*2, pos[1]))
-                    
+
 
             if pos[1]-1 > -1:
                 curr_square = self.board[multip+pos[0]][pos[1]-1]
@@ -189,13 +189,14 @@ class Board:
                     res.append((multip+pos[0], pos[1]+1))
 
             en_passant = piece.get_en_passant()
-            
+
 
             for el in en_passant:
-                res.append((pos[0]+el[0], pos[1]+el[1]))
+                if not self.discovers_check(el, pos):
+                    res.append((pos[0]+el[0], pos[1]+el[1]))
 
 
-        
+
         elif isinstance(piece, pieces.King):
             directions = piece.get_directions()
             for el in directions:
@@ -246,12 +247,12 @@ class Board:
         return res
 
     def check_castling(self, king_pos, direction):
-        
+
         king = self.board[king_pos[0]][king_pos[1]].piece
 
         if not king.can_castle or self.king_in_check[king.color] != Checked_by.NONE:
             return False
-        
+
         if direction == 1:
             column = 7
         else:
@@ -259,9 +260,9 @@ class Board:
 
         if not self.board[king_pos[0]][column].piece.can_castle:
             return False
-            
+
         squares_in_between = self.get_squares_in_between(king_pos, (king_pos[0], column))
-            
+
         for el in squares_in_between:
             if self.board[el[0]][el[1]].piece is not None:
                 return False
@@ -436,10 +437,10 @@ class Board:
 
 
     def is_checkmate(self, color):
-        
+
         #czyszczenie tablicy figur atakujących króla w przypadku wykonania ruchu przez gracza
         self.attackers = []
-        
+
         if color == 'w':
             pos = self.white_king
         else:
@@ -595,13 +596,13 @@ if __name__ == '__main__':
 
     b.move_piece((0,3), (1,4))
     b.move_piece((6,4), (3,4), True)
-    
+
     b.move_piece((1,3), (3,3), True)
-    
-    
+
+
     #b.move_piece((3,4), (2,3))
     #b.move_piece((7,3), (3,3), True)
-    
+
     print(b.get_legal_moves((3,4)))
 
     b.print_board()
