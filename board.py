@@ -52,6 +52,13 @@ class Board:
 
     def move_piece(self, s_pos, t_pos, real_move = False):
 
+        if real_move:
+            for el in self.en_passant:
+                piece = self.board[el[0]][el[1]].piece
+                if piece is not None:
+                    piece.en_passant_decreasing = False
+                    piece.en_passant_increasing = False
+
         s_square = self.board[s_pos[0]][s_pos[1]]
 
         if isinstance(s_square.piece, pieces.King):
@@ -69,7 +76,32 @@ class Board:
                 
                 rook = self.board[t_pos[0]][column].remove_piece()
                 self.board[t_pos[0]][t_pos[1]-direction].place_piece(rook)
-                
+        
+        elif isinstance(s_square.piece, pieces.Pawn):
+            if real_move:
+                s_square.piece.en_passant_decreasing = False
+                s_square.piece.en_passant_increasing = False
+                s_square.piece.can_move_two = False
+
+            if abs(t_pos[0]-s_pos[0]) == 2:
+                if t_pos[1] > 0:
+                    p_square = self.board[t_pos[0]][t_pos[1]-1]
+                    
+                    if p_square.piece is not None and p_square.piece.color != s_square.piece.color:
+                        p_square.piece.en_passant_increasing = True
+                        self.en_passant.append((t_pos[0], t_pos[1]-1)) 
+
+                if t_pos[1] < 7:
+                    p_square = self.board[t_pos[0]][t_pos[1]+1]
+
+                    if p_square.piece is not None and p_square.piece.color != s_square.piece.color:
+                        p_square.piece.en_passant_decreasing = True
+                        self.en_passant.append((t_pos[0], t_pos[1]+1))
+            
+            elif s_square.piece.en_passant_increasing and t_pos[1]-s_pos[1] == 1:
+                self.board[s_pos[0]][t_pos[1]].remove_piece()
+            elif s_square.piece.en_passant_decreasing and t_pos[1]-s_pos[1] == -1:
+                self.board[s_pos[0]][t_pos[1]].remove_piece()
 
         piece = s_square.remove_piece()
 
@@ -138,11 +170,12 @@ class Board:
             else:
                 multip = -1
 
+
             if self.board[multip+pos[0]][pos[1]].is_empty() and not self.discovers_check((multip, 0), pos):
                 res.append((pos[0]+multip,pos[1]))
-                if multip%7 == 6 or multip%7 == 1 and self.board[2*multip+pos[0]][pos[1]].is_empty() and not self.discovers_check((multip*2, 0), pos):
+                if piece.can_move_two and pos[0]%7 == 6 or pos[0]%7 == 1 and self.board[2*multip+pos[0]][pos[1]].is_empty() and not self.discovers_check((multip*2, 0), pos):
                     res.append((pos[0]+multip*2, pos[1]))
-
+                    
 
             if pos[1]-1 > -1:
                 curr_square = self.board[multip+pos[0]][pos[1]-1]
@@ -156,15 +189,15 @@ class Board:
                     res.append((multip+pos[0], pos[1]+1))
 
             en_passant = piece.get_en_passant()
+            
 
             for el in en_passant:
-                res.append(el)
+                res.append((pos[0]+el[0], pos[1]+el[1]))
 
 
-        directions = piece.get_directions()
-
-
-        if isinstance(piece, pieces.King):
+        
+        elif isinstance(piece, pieces.King):
+            directions = piece.get_directions()
             for el in directions:
 
                 if pos[0]+el[0] > -1 and pos[0]+el[0] < 8 and pos[1]+el[1] > -1 and pos[1]+el[1] < 8:
@@ -175,12 +208,13 @@ class Board:
                         res.append((el[0]+pos[0], el[1]+pos[1]))
 
             if self.check_castling(pos, 1):
-                res.append((pos[0], pos[1]+2))
+               res.append((pos[0], pos[1]+2))
             if self.check_castling(pos, -1):
-                res.append((pos[0], pos[1]-2))
+               res.append((pos[0], pos[1]-2))
 
 
         elif isinstance(piece, pieces.Knight):
+            directions = piece.get_directions()
             for el in directions:
 
                 if pos[0]+el[0] > -1 and pos[0]+el[0] < 8 and pos[1]+el[1] > -1 and pos[1]+el[1] < 8:
@@ -192,6 +226,7 @@ class Board:
                         res.append((pos[0]+el[0], pos[1]+el[1]))
 
         else:
+            directions = piece.get_directions()
             for el in directions:
                 i = pos[0]+el[0]
 
@@ -228,10 +263,10 @@ class Board:
         squares_in_between = self.get_squares_in_between(king_pos, (king_pos[0], column))
             
         for el in squares_in_between:
-            if el.piece is not None:
+            if self.board[el[0]][el[1]].piece is not None:
                 return False
 
-        return self.is_in_check(king.color, pos = (king_pos[0], king_pos[1]+direction)) and self.is_in_check(king.color, pos = (king_pos[0], king_pos[1]+2*direction))
+        return not self.is_in_check(king.color, pos = (king_pos[0], king_pos[1]+direction)) and not self.is_in_check(king.color, pos = (king_pos[0], king_pos[1]+2*direction))
 
 
 
@@ -558,12 +593,17 @@ if __name__ == '__main__':
     # #b.board[7][3].remove_piece()
     # b.board[7][5].remove_piece()
 
-    b.move_piece((0,3), (2,4), True)
-    b.board[6][4].remove_piece()
-    b.move_piece((6,7), (7,5), True)
-    #b.is_checkmate('w')
-    print("Moves: ", b.get_moves_in_check((7,3)))
-    print(b.king_in_check['w'])
+    b.move_piece((0,3), (1,4))
+    b.move_piece((6,4), (3,4), True)
+    
+    b.move_piece((1,3), (3,3), True)
+    
+    
+    #b.move_piece((3,4), (2,3))
+    #b.move_piece((7,3), (3,3), True)
+    
+    print(b.get_legal_moves((3,4)))
 
     b.print_board()
-    print(b.is_checkmate('w'))
+    #print(b.is_checkmate('w'))
+    print(b.check_castling((7,4), 1))
