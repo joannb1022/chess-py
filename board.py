@@ -312,7 +312,7 @@ class Board:
             if not curr_square.is_empty():
                 if curr_square.piece.color == color:
                     break
-                elif (not pawn_kill and i == pos[0] - 1 and color == "w" and curr_square.piece.color == "b") or isinstance(curr_square.piece, pieces.Queen) or isinstance(curr_square.piece, pieces.Rook):
+                elif isinstance(curr_square.piece, pieces.Queen) or isinstance(curr_square.piece, pieces.Rook): ######
                     if res is not None:
                         res.append((i, pos[1]))
                     else:
@@ -521,18 +521,18 @@ class Board:
                 """
 
                 squares_under_check = self.get_squares_in_between(opponent_piece, pos)
-
+                
                 for el in squares_under_check:
                     #print(el)
 
                     #figury mogące zablokować szacha poprzez zaslonienie krola
                     attackers3 = []
-                    ha = self.is_in_check(color2, attackers3, el, pawn_kill = False)
+                    #ha = self.is_in_check(color2, attackers3, el, pawn_kill = False)
                     #print(attackers3)
 
                     if self.is_in_check(color2, attackers3, el, pawn_kill = False):
                         #print(el)
-                        #print(attackers3)
+                        print(attackers3)
                         for piece in attackers3:
                             direction = (el[0]-piece[0], el[1]-piece[1])
 
