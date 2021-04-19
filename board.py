@@ -22,6 +22,7 @@ class Board:
         # self.white_king_in_check = Checked_by.NONE
         self.king_in_check = {'w': Checked_by.NONE, 'b': Checked_by.NONE}
         self.attackers = []
+        self.place_pieces()
 
     def place_pieces(self):
         self.board[0][0].place_piece(pieces.Rook('b'))
@@ -159,10 +160,18 @@ class Board:
             print('\n')
 
 
+    def get_moves(self, pos, color):
+        if self.king_in_check[color] != Checked_by.NONE:
+            return self.get_moves_in_check(pos)
+        return self.get_legal_moves(pos)
+
+
     def get_legal_moves(self,pos):
         piece = self.board[pos[0]][pos[1]].piece
-
         res = []
+
+        if piece is None:
+            return res
 
         if isinstance(piece, pieces.Pawn):
             if piece.color == 'b':
@@ -539,6 +548,8 @@ class Board:
         piece = self.board[pos[0]][pos[1]].piece
 
         res = []
+        if piece is None:
+            return res
 
         if self.king_in_check[piece.color] == Checked_by.TWO:
             if not isinstance(piece, pieces.King):
@@ -571,6 +582,15 @@ class Board:
         return res
 
 
+    def is_stalemate(self, color):
+        if not self.king_in_check[color] == Checked_by.NONE:
+            return False
+        
+        for i in range(8):
+            for j in range(8):
+                if self.board[i][j].piece is not None and self.board[i][j].piece.color == color and self.get_legal_moves((i,j)):
+                    return False
+        return True
 
     def reverse_move(self):
 
@@ -607,4 +627,4 @@ if __name__ == '__main__':
 
     b.print_board()
     #print(b.is_checkmate('w'))
-    print(b.check_castling((7,4), 1))
+    #print(b.check_castling((7,4), 1))
