@@ -429,6 +429,12 @@ class Board:
 
         return False
 
+    def get_piece(self, pos):
+        piece = self.board[pos[0]][pos[1]].get_piece()
+        if piece is None:
+            return None, None
+        return piece, piece.color
+
 
     def discovers_check(self, dir,pos):
         color = self.board[pos[0]][pos[1]].piece.color

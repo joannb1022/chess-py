@@ -16,7 +16,11 @@ class Square:
         return False
         #return self.piece
 
-    def get(self):
+    def get_piece(self):
         return self.piece
 
+    def get_image(self):
+        if self.piece:
+            return self.piece.get_image()
+        return None
     

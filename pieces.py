@@ -6,6 +6,8 @@ class Piece:
         self.can_castle = True
         #self.position = (None, None) 
 
+    def get_image(self):
+        return r'pieces/{}{}.png'.format(self.color, self.__class__.__name__[0])
 
 
 class Pawn(Piece):
@@ -220,14 +222,11 @@ class Knight(Piece):
     def draw(self):
         return self.color+'s'
 
+    def get_image(self):
+        return r'pieces/{}{}.png'.format(self.color, 'N')
+
 
 
 
 if __name__ == '__main__':
-    q = Queen('b')
-    kn = Knight('b')
-    k = King('b')
-    print(q.can_reach(0,0,6,1))
-    #print(q.get_available_squares(0, 0))
-    #print(kn.get_available_squares(0,7))
-    #print(k.get_available_squares(7,7))
+    pass
