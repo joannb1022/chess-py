@@ -52,6 +52,9 @@ class Board:
 
 
     def move_piece(self, s_pos, t_pos, real_move = False):
+        
+        s_square = self.board[s_pos[0]][s_pos[1]]
+        curr_move = move.Move(s_square.get_piece(), s_pos, t_pos, self.board[t_pos[0]][t_pos[1]].piece)
 
         if real_move:
             for el in self.en_passant:
@@ -60,7 +63,7 @@ class Board:
                     piece.en_passant_decreasing = False
                     piece.en_passant_increasing = False
 
-        s_square = self.board[s_pos[0]][s_pos[1]]
+        #s_square = self.board[s_pos[0]][s_pos[1]]
 
         if isinstance(s_square.piece, pieces.King):
             if s_square.piece.color == 'b':
@@ -69,7 +72,7 @@ class Board:
                 self.white_king = (t_pos[0], t_pos[1])
 
             if abs(s_pos[1]-t_pos[1]) == 2:
-                direction = t_pos[1]-s_pos[1]/2
+                direction = (t_pos[1]-s_pos[1])//2
                 if direction == -1:
                     column = 0
                 else:
@@ -77,6 +80,8 @@ class Board:
 
                 rook = self.board[t_pos[0]][column].remove_piece()
                 self.board[t_pos[0]][t_pos[1]-direction].place_piece(rook)
+
+                curr_move.castle = [(t_pos[0], column), (t_pos[0], t_pos[1]-direction)]
 
         elif isinstance(s_square.piece, pieces.Pawn):
             if real_move:
@@ -101,13 +106,14 @@ class Board:
 
             elif s_square.piece.en_passant_increasing and t_pos[1]-s_pos[1] == 1 and real_move:
                 self.board[s_pos[0]][t_pos[1]].remove_piece()
+                curr_move.en_passant = True
             elif s_square.piece.en_passant_decreasing and t_pos[1]-s_pos[1] == -1 and real_move:
                 self.board[s_pos[0]][t_pos[1]].remove_piece()
+                curr_move.en_passant = True
 
         piece = s_square.remove_piece()
 
-
-        curr_move = move.Move(piece, s_pos, t_pos, self.board[t_pos[0]][t_pos[1]].piece)
+        #curr_move = move.Move(piece, s_pos, t_pos, self.board[t_pos[0]][t_pos[1]].piece)
 
         self.board[t_pos[0]][t_pos[1]].place_piece(piece)
 
