@@ -2,6 +2,7 @@ import board
 import gui
 import tkinter
 from time import sleep
+import asyncio
 
 class Engine:
     def __init__(self, parent):
@@ -16,7 +17,7 @@ class Engine:
     def run(self):
         while True:
             self.game.print_board()
-            self.visualiser.draw()
+            self.visualiser.draw(self.turn)
             if(self.game.is_checkmate(self.turn)):
                 print(f"CHECKMATE, {self.turn} LOSES")
                 break
@@ -34,7 +35,11 @@ class Engine:
         while True:
             
             print("Select square:")
+            
+            
             temp_square = (int(input()), int(input()))
+            #temp_square = self.visualiser.current_coordinates
+
             
             temp_piece = self.game.board[temp_square[0]][temp_square[1]].piece
 
@@ -49,7 +54,12 @@ class Engine:
             self.chosen_square = temp_square
             
             available_squares = self.game.get_moves(self.chosen_square, self.turn)
-            
+            self.visualiser.set_squares_to_highlight(available_squares)
+
+            print(self.visualiser.squares_to_highlight)
+
+            self.visualiser.draw(self.turn)
+
             flag = 1
             while flag:
                 print("Select target square:")
@@ -59,7 +69,9 @@ class Engine:
                 if self.target_square not in available_squares:
                     self.chosen_square = self.target_square
                     available_squares = self.game.get_moves(self.chosen_square, self.turn)
-                    
+                    self.visualiser.set_squares_to_highlight(available_squares)
+                    self.visualiser.draw(self.turn)
+
                     curr_piece = self.game.board[self.chosen_square[0]][self.chosen_square[1]].piece
 
                     while not available_squares or curr_piece is None or curr_piece.color != color:
@@ -69,6 +81,8 @@ class Engine:
                        
                         curr_piece = self.game.board[self.chosen_square[0]][self.chosen_square[1]].piece
                         available_squares = self.game.get_moves(self.chosen_square, self.turn)
+                        self.visualiser.set_squares_to_highlight(available_squares)
+                        self.visualiser.draw(self.turn)
 
                     self.target_square = None
                 else:
