@@ -13,13 +13,11 @@ class Checked_by(Enum):
 
 class Board:
     def __init__(self):
-        self.board = [[Square() for j in range(8)] for i in range(8)]
+        self.board = [[Square() for _ in range(8)] for _ in range(8)]
         self.black_king = (0,4)
         self.white_king = (7,4)
         self.move_history = []
         self.en_passant = []
-        # self.black_king_in_check = Checked_by.NONE
-        # self.white_king_in_check = Checked_by.NONE
         self.king_in_check = {'w': Checked_by.NONE, 'b': Checked_by.NONE}
         self.attackers = []
         self.place_pieces()
@@ -111,9 +109,10 @@ class Board:
                 self.board[s_pos[0]][t_pos[1]].remove_piece()
                 curr_move.en_passant = True
 
-        piece = s_square.remove_piece()
+            if t_pos[0] == 0 or t_pos[0] == 7:
+                curr_move.promotion = True
 
-        #curr_move = move.Move(piece, s_pos, t_pos, self.board[t_pos[0]][t_pos[1]].piece)
+        piece = s_square.remove_piece()
 
         self.board[t_pos[0]][t_pos[1]].place_piece(piece)
 

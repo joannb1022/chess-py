@@ -2,7 +2,6 @@ import board
 import gui
 import tkinter
 from time import sleep
-import asyncio
 
 class Engine:
     def __init__(self, parent):
@@ -18,6 +17,7 @@ class Engine:
         while True:
             self.game.print_board()
             self.visualiser.draw(self.turn)
+            
             if(self.game.is_checkmate(self.turn)):
                 print(f"CHECKMATE, {self.turn} LOSES")
                 break
@@ -25,6 +25,7 @@ class Engine:
                 print("DRAW")
                 break
             self.make_move(self.turn)
+            self.visualiser.promotion_window('w')
             self.chosen_square = None
             if self.turn == 'w':
                 self.turn = 'b'
@@ -35,9 +36,8 @@ class Engine:
         while True:
             
             print("Select square:")
-            
-            
             temp_square = (int(input()), int(input()))
+            
             #temp_square = self.visualiser.current_coordinates
 
             
@@ -98,7 +98,10 @@ class Engine:
             new_squares.append((last_move.start_pos[0], last_move.end_pos[1]))
         if last_move.castle:
             new_squares += last_move.castle
+        #if last_move.promotion:
+            #promotion_piece = self.visualiser.
         self.visualiser.set_squares_to_change(new_squares)
+        self.visualiser.set_squares_to_highlight([])
 
 
 
