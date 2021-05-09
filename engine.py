@@ -7,6 +7,7 @@ class Engine:
     def __init__(self, parent):
         self.game = board.Board()
         self.visualiser = gui.BoardVisualiser(parent, self.game)
+        self.promotion_win = None
         self.turn = 'w'
         self.chosen_square = None
         self.target_square = None
@@ -25,7 +26,8 @@ class Engine:
                 print("DRAW")
                 break
             self.make_move(self.turn)
-            self.visualiser.promotion_window('w')
+            self.promotion_win = self.visualiser.promotion_window('w')
+            print(self.promotion_win.chosen_piece)
             self.chosen_square = None
             if self.turn == 'w':
                 self.turn = 'b'

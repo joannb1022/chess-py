@@ -103,6 +103,7 @@ class BoardVisualiser(tkinter.Frame):
     def promotion_window(self, color):
         self.new = tkinter.Toplevel(self.parent)
         self.new_window = PromotionWindow(self.new, color)
+        return self.new_window
 
     # def close_windows(self):
     #     self.parent.destroy()
@@ -126,6 +127,7 @@ class PromotionWindow(tkinter.Frame):
 
         self.load_images()
         self.load_buttons()
+        self.parent.wait_window(self.parent)
 
         # self.canvas = tkinter.Canvas(self, width = 4*self.size, height = self.size)
         # self.canvas.pack()
