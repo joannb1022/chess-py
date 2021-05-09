@@ -458,6 +458,7 @@ class Board:
 
     def is_checkmate(self, color):
 
+        self.king_in_check[color] = Checked_by.NONE
         #czyszczenie tablicy figur atakujących króla w przypadku wykonania ruchu przez gracza
         self.attackers = []
 
@@ -533,6 +534,7 @@ class Board:
 
                 squares_under_check = self.get_squares_in_between(opponent_piece, pos)
                 
+
                 for el in squares_under_check:
                     #print(el)
 
@@ -587,7 +589,7 @@ class Board:
                 squares_in_check = self.get_squares_in_between(self.black_king, self.attackers[0])
 
             for el in legal_moves:
-                if el in squares_in_check:
+                if el in squares_in_check or el in self.attackers:
                     res.append(el)
 
         return res
