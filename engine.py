@@ -28,7 +28,7 @@ class Engine:
                 print("DRAW")
                 break
             self.make_move(self.turn)
-            #self.promotion_win = self.visualiser.promotion_window('w')
+
             self.chosen_square = None
             if self.turn == 'w':
                 self.turn = 'b'
