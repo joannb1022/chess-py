@@ -17,6 +17,7 @@ class BoardVisualiser(tkinter.Frame):
         self.current_coordinates = (None, None)
         self.clicked = False
         self.new_window = None
+        self.wait_state = tkinter.IntVar()
 
         tkinter.Frame.__init__(self, parent)
 
@@ -99,11 +100,15 @@ class BoardVisualiser(tkinter.Frame):
         print('visualiser:', self.clicked)
         self.current_coordinates = (y,x)
         print('in get_coord')
+        self.wait_state.set(1)
 
     def promotion_window(self, color):
         self.new = tkinter.Toplevel(self.parent)
         self.new_window = PromotionWindow(self.new, color)
         return self.new_window
+
+    def set_wait_state(self):
+        self.wait_state = tkinter.IntVar()
 
     # def close_windows(self):
     #     self.parent.destroy()

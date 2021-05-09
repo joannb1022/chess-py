@@ -39,7 +39,10 @@ class Engine:
         while True:
 
             print("Select square:")
-            temp_square = (int(input()), int(input()))
+            self.visualiser.parent.wait_variable(self.visualiser.wait_state)
+            temp_square = self.visualiser.current_coordinates
+            self.visualiser.set_wait_state()
+            # temp_square = (int(input()), int(input()))
 
             #temp_square = self.visualiser.current_coordinates
 
@@ -49,7 +52,10 @@ class Engine:
             while temp_piece is None or temp_piece.color != color:
                 print("Select square:")
 
-                temp_square = (int(input()), int(input()))
+                # temp_square = (int(input()), int(input()))
+                self.visualiser.parent.wait_variable(self.visualiser.wait_state)
+                temp_square = self.visualiser.current_coordinates
+                self.visualiser.set_wait_state()
 
                 temp_piece = self.game.board[temp_square[0]][temp_square[1]].piece
 
@@ -67,7 +73,10 @@ class Engine:
             while flag:
                 print("Select target square:")
 
-                self.target_square = (int(input()), int(input()))
+                # self.target_square = (int(input()), int(input()))
+                self.visualiser.parent.wait_variable(self.visualiser.wait_state)
+                self.target_square = self.visualiser.current_coordinates
+                self.visualiser.set_wait_state()
 
                 if self.target_square not in available_squares:
                     self.chosen_square = self.target_square
@@ -80,7 +89,11 @@ class Engine:
                     while not available_squares or curr_piece is None or curr_piece.color != color:
                         print("Select square:")
 
-                        self.chosen_square = (int(input()), int(input()))
+                        # self.chosen_square = (int(input()), int(input()))
+                        self.visualiser.parent.wait_variable(self.visualiser.wait_state)
+                        self.chosen_square = self.visualiser.current_coordinates
+                        self.visualiser.set_wait_state()
+
 
                         curr_piece = self.game.board[self.chosen_square[0]][self.chosen_square[1]].piece
                         available_squares = self.game.get_moves(self.chosen_square, self.turn)
