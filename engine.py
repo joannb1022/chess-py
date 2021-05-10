@@ -9,27 +9,33 @@ class Engine:
         self.game = board.Board()
         self.visualiser = gui.BoardVisualiser(parent, self.game)
         self.promotion_win = None
+        self.init_win = None
         self.turn = 'w'
         self.chosen_square = None
         self.target_square = None
         self.promotion_pieces = {'R': pieces.Rook, 'N': pieces.Knight, 'B': pieces.Bishop, 'Q': pieces.Queen}
+        self.time_option = None
 
         self.visualiser.pack()
 
     def run(self):
+        self.init_win = self.visualiser.start_game()
+        self.time_option = self.init_win.chosen_time
+        print(self.time_option)
         while True:
             self.game.print_board()
             #self.visualiser.draw(self.turn)
             self.visualiser.draw()
 
             if(self.game.is_checkmate(self.turn)):
-                print(f"CHECKMATE, {self.turn} LOSES")
+                # print(f"CHECKMATE, {self.turn} LOSES")
+                self.visualiser.show_checkmate(self.turn)
+                self.end_game() #na razie tam jest sam exit ale moze bedzie cos jeszcze
                 break
             elif self.game.is_stalemate(self.turn):
                 print("DRAW")
                 break
             self.make_move(self.turn)
-
             self.chosen_square = None
             if self.turn == 'w':
                 self.turn = 'b'
@@ -90,7 +96,7 @@ class Engine:
                         available_squares = self.game.get_moves(self.chosen_square, self.turn)
                         self.visualiser.set_squares_to_change(self.visualiser.squares_to_highlight)
                         self.visualiser.set_squares_to_highlight(available_squares)
-            
+
                     self.visualiser.draw()
 
                     curr_piece = self.game.board[self.chosen_square[0]][self.chosen_square[1]].piece
@@ -137,6 +143,9 @@ class Engine:
         self.visualiser.set_squares_to_highlight([])
 
 
+
+        def end_game(self):
+            exit()
 
 if __name__ == "__main__":
     root = tkinter.Tk()

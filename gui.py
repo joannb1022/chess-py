@@ -3,6 +3,7 @@ import board
 from os import listdir
 import os
 from time import sleep
+from time import strftime
 
 class BoardVisualiser(tkinter.Frame):
 
@@ -16,10 +17,10 @@ class BoardVisualiser(tkinter.Frame):
         self.squares_to_highlight = []
         self.pieces = {}
         self.current_coordinates = (None, None)
-        self.clicked = False
-        self.new_window = None
         self.color = 'w'
         self.prev_color = 'w'
+
+        self.new_window = None
         self.wait_state = tkinter.IntVar()
 
         tkinter.Frame.__init__(self, parent)
@@ -28,29 +29,41 @@ class BoardVisualiser(tkinter.Frame):
         self.canvas.pack()
         self.parent.bind('<Button>', self.get_coord)
 
+        self.clock_white = tkinter.Label()
+        self.clock_black = tkinter.Label()
+
         self.load_images()
-        print(self.pieces)
         #self.draw('w')
         self.draw()
+        self.show_clocks()
 
-    def test(self, event):
-        print('test')
+    def start_game(self):
+        self.new = tkinter.Toplevel(self.parent)
+        self.new.attributes('-topmost', True)
+        self.new_window = InitWindow(self.new)
+        return self.new_window
 
     def draw(self):
-        print(len(self.squares_to_change))
+        # print(len(self.squares_to_change))
 
-        if self.color != self.prev_color:
-            self.squares_to_change = []
-            for i in range(8):
-                for j in range(8):
-                    self.squares_to_change.append((i,j))
+        # if self.color != self.prev_color:
+        #     self.squares_to_change = []
+        #     for i in range(8):
+        #         for j in range(8):
+        #             self.squares_to_change.append((i,j))
 
-        for el in self.squares_to_change:
-            self.canvas.delete(f'{el[0]}{el[1]}')
-            self.canvas.delete(f'{7-el[0]}{7-el[1]}')
-        for el in self.squares_to_highlight:
-            self.canvas.delete(f'{el[0]}{el[1]}')
-            self.canvas.delete(f'{7-el[0]}{7-el[1]}')
+        # for el in self.squares_to_change:
+        #     self.canvas.delete(f'{el[0]}{el[1]}')
+        #     self.canvas.delete(f'{7-el[0]}{7-el[1]}')
+        # for el in self.squares_to_highlight:
+        #     self.canvas.delete(f'{el[0]}{el[1]}')
+        #     self.canvas.delete(f'{7-el[0]}{7-el[1]}')
+
+
+        self.squares_to_change = []
+        for i in range(8):
+            for j in range(8):
+                self.squares_to_change.append((i,j))
 
         #print(self.canvas.find_all())
         self.canvas.delete("all")
@@ -69,7 +82,7 @@ class BoardVisualiser(tkinter.Frame):
 
         for el in self.squares_to_change:
             if self.board.get_piece(el) != (None, None):
-                
+
                 file_name = self.board.board[el[0]][el[1]].get_image()
                 piece_image = self.pieces[file_name[7:9]]
 
@@ -118,7 +131,7 @@ class BoardVisualiser(tkinter.Frame):
             self.current_coordinates = (y,x)
         else:
             self.current_coordinates = (7-y, 7-x)
-        
+
         print('in get_coord')
         self.wait_state.set(1)
 
@@ -130,10 +143,28 @@ class BoardVisualiser(tkinter.Frame):
     def set_wait_state(self):
         self.wait_state = tkinter.IntVar()
 
-    # def close_windows(self):
-    #     self.parent.destroy()
+    def show_clocks(self):
+        hour = strftime("%H")
+        minute = strftime("%M")
+        second = strftime("%S")
+        self.clock_black.config(text = hour + ":" + minute + ":" + second )
+        self.clock_black.after(1000, self.show_clocks)
+        self.clock_black.pack(side = tkinter.RIGHT)
 
+        self.clock_white.config(text = hour + ":" + minute + ":" + second)
+        self.clock_white.after(1000, self.show_clocks)
+        self.clock_white.pack(side = tkinter.RIGHT)
 
+    def start_clock():
+        print("ehj")
+
+    def stop_clock():
+        print("rgr")
+
+    def show_checkmate(self, color):
+        self.new = tkinter.Toplevel(self.parent)
+        self.new_window = Checkmate(self.new, color)
+        self.parent.destroy()
 
 class PromotionWindow(tkinter.Frame):
     def __init__(self, parent, color):
@@ -147,6 +178,8 @@ class PromotionWindow(tkinter.Frame):
         self.pieces = [f'{color}R', f'{color}N', f'{color}B', f'{color}Q']
         self.label = tkinter.Label(self.parent, text="Choose piece")
         self.label.pack()
+
+
         self.frame.pack()
         self.chosen_piece = None
 
@@ -154,17 +187,13 @@ class PromotionWindow(tkinter.Frame):
         self.load_buttons()
         self.parent.wait_window(self.parent)
 
-        # self.canvas = tkinter.Canvas(self, width = 4*self.size, height = self.size)
-        # self.canvas.pack()
-        # self.post_images()
-        # self.parent.bind('<Button>', self.get_piece)
 
     def load_buttons(self):
         self.buttons = [] #nie wiem czy dawac to self, bo bez tego tez zadziala chyba to nie jest nam potrzebne potem
         for i, piece in enumerate(self.pieces):
             photo = self.images[piece]
-            b = tkinter.Button(self.parent, height = 64, width = 64, image = photo, command = lambda i=i: self.button_press(i))
-            b.image = photo  #bez tego mi sie nie ladowaly (cos z tym garbage collector)
+            b = tkinter.Button(self.parent, height = self.size, width = self.size, image = photo, command = lambda i=i: self.button_press(i))
+            b.image = photo
             b.pack(side = tkinter.LEFT)
             self.buttons.append(b)
 
@@ -173,10 +202,6 @@ class PromotionWindow(tkinter.Frame):
         self.chosen_piece = self.pieces[i]
         self.parent.destroy()
 
-    # def get_piece(self, event):
-    #     x = int(event.x/self.size)
-    #     print(x)
-    #     return self.pieces[x]
 
     def load_images(self):
         for file_name in self.pieces:
@@ -185,13 +210,51 @@ class PromotionWindow(tkinter.Frame):
             piece_image = tkinter.PhotoImage(file=image_path)
             self.images[file_name] = piece_image
 
-    # def post_images(self):
-    #     for i in range(4):
-    #         print(self.images[self.pieces[i]])
-    #         #self.canvas.create_image((self.size*(i+0.5), self.size*(i+0.5)), image = self.images[self.pieces[i]])
-    #         self.canvas.create_rectangle(0, 0, 100, 100, fill = "red")
-    #         self.canvas.create_image((0, 0), image = self.images[self.pieces[i]])
 
+class InitWindow():
+    def __init__(self, parent):
+        # tkinter.Frame.__init__(self, parent)
+
+        self.parent = parent
+        self.size = 400
+        self.parent.geometry(f'{self.size}x{self.size}')
+        self.frame = tkinter.Frame(self.parent)
+        self.label = tkinter.Label(self.parent, text="Hello")
+        self.time_array = [1, 2, 5, 10]
+        self.chosen_time = None
+
+        self.label.pack()
+        self.frame.pack()
+
+        self.load_buttons()
+
+        self.parent.wait_window(self.parent)
+
+    def load_buttons(self):
+        start_button = tkinter.Button(self.parent, text = 'Start', bd = '5' ,command = self.destroy_win)
+        start_button.pack(side = tkinter.BOTTOM)
+
+        for i, time in enumerate(self.time_array):
+            b = tkinter.Button(self.parent,text = f'{time}', command = lambda i=i: self.choose_time(i))
+            b.pack(side = tkinter.LEFT)
+
+    def choose_time(self, i):
+        self.chosen_time = self.time_array[i]
+
+    def destroy_win(self):
+        self.parent.destroy()
+
+
+class Checkmate():
+    def __init__(self, parent, color):
+
+        self.parent = parent
+        self.parent.geometry("450x300")
+
+        frame = tkinter.Frame(self.parent)
+        label = tkinter.Label(self.parent, text=f"CHECKMATE, {color} LOSES").place(x = 200, y = 100)
+
+        self.parent.wait_window(self.parent)
 
 
 if __name__ == "__main__":
