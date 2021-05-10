@@ -2,6 +2,7 @@ import tkinter
 import board
 from os import listdir
 import os
+from time import sleep
 
 class BoardVisualiser(tkinter.Frame):
 
@@ -17,6 +18,8 @@ class BoardVisualiser(tkinter.Frame):
         self.current_coordinates = (None, None)
         self.clicked = False
         self.new_window = None
+        self.color = 'w'
+        self.prev_color = 'w'
         self.wait_state = tkinter.IntVar()
 
         tkinter.Frame.__init__(self, parent)
@@ -27,59 +30,69 @@ class BoardVisualiser(tkinter.Frame):
 
         self.load_images()
         print(self.pieces)
-        self.draw('w')
+        #self.draw('w')
+        self.draw()
 
     def test(self, event):
         print('test')
 
-    def draw(self, color):
-        self.squares_to_change = []
-        for i in range(8):
-            for j in range(8):
-                self.squares_to_change.append((i,j))
+    def draw(self):
+        print(len(self.squares_to_change))
+
+        if self.color != self.prev_color:
+            self.squares_to_change = []
+            for i in range(8):
+                for j in range(8):
+                    self.squares_to_change.append((i,j))
+
+        for el in self.squares_to_change:
+            self.canvas.delete(f'{el[0]}{el[1]}')
+        for el in self.squares_to_highlight:
+            self.canvas.delete(f'{el[0]}{el[1]}')
+
+        #self.canvas.delete("all")
+        #sleep(0.5)
 
         for el in self.squares_to_change:
             if (el[0]+el[1]) % 2 != 0:
                 filler = '#a76d3e'
             else:
                 filler = "#f0dfcd"
-            if color == 'w':
-                self.canvas.create_rectangle(el[1]*self.size, el[0]*self.size, (el[1]+1)*self.size, (el[0]+1)*self.size, fill = filler, width = 0)
+            if self.color == 'w':
+                self.canvas.create_rectangle(el[1]*self.size, el[0]*self.size, (el[1]+1)*self.size, (el[0]+1)*self.size, fill = filler, width = 0, tags = f'{el[0]}{el[1]}')
             else:
-                self.canvas.create_rectangle((7-el[1])*self.size, (7-el[0])*self.size, (7-el[1]+1)*self.size, (7-el[0]+1)*self.size, fill = filler, width = 0)
+                self.canvas.create_rectangle((7-el[1])*self.size, (7-el[0])*self.size, (7-el[1]+1)*self.size, (7-el[0]+1)*self.size, fill = filler, width = 0, tags = f'{7-el[0]}{7-el[1]}')
 
 
         for el in self.squares_to_change:
             if self.board.get_piece(el) != (None, None):
-                print('not none')
-
+                
                 file_name = self.board.board[el[0]][el[1]].get_image()
                 piece_image = self.pieces[file_name[7:9]]
-                #self.parent.piece_image = piece_image
 
-                if color == 'w':
-                    self.canvas.create_image((self.size*(el[1]+0.5), self.size*(el[0]+0.5)), image = piece_image)
+                if self.color == 'w':
+                    self.canvas.create_image((self.size*(el[1]+0.5), self.size*(el[0]+0.5)), image = piece_image, tags = f'{el[0]}{el[1]}')
                 else:
-                    self.canvas.create_image((self.size*(7-el[1]+0.5), self.size*(7-el[0]+0.5)), image = piece_image)
+                    self.canvas.create_image((self.size*(7-el[1]+0.5), self.size*(7-el[0]+0.5)), image = piece_image, tags = f'{7-el[0]}{7-el[1]}')
 
         for el in self.squares_to_highlight:
             if self.board.get_piece(el) != (None, None):
-                if color == 'w':
+                if self.color == 'w':
                     self.higlight_square(el)
                 else:
                     self.higlight_square((7-el[0], 7-el[1]))
             else:
-                if color == 'w':
-                    self.canvas.create_oval((el[1]+0.4)*self.size, (el[0]+0.4)*self.size, (el[1]+0.6)*self.size, (el[0]+0.6)*self.size, fill = '#1C9005', outline = '#1C9005')
+                if self.color == 'w':
+                    self.canvas.create_oval((el[1]+0.4)*self.size, (el[0]+0.4)*self.size, (el[1]+0.6)*self.size, (el[0]+0.6)*self.size, fill = '#1C9005', outline = '#1C9005', tags = f'{el[0]}{el[1]}')
                 else:
-                    self.canvas.create_oval((7-el[1]+0.4)*self.size, (7-el[0]+0.4)*self.size, (7-el[1]+0.6)*self.size, (7-el[0]+0.6)*self.size, fill = '#1C9005', outline = '#1C9005')
+                    self.canvas.create_oval((7-el[1]+0.4)*self.size, (7-el[0]+0.4)*self.size, (7-el[1]+0.6)*self.size, (7-el[0]+0.6)*self.size, fill = '#1C9005', outline = '#1C9005', tags = f'{7-el[0]}{7-el[1]}')
 
 
     def higlight_square(self, square):
-        self.canvas.create_polygon(square[1]*self.size, square[0]*self.size, square[1]*self.size, square[0]*self.size+16, square[1]*self.size+16, square[0]*self.size, fill = '#1C9005')
-        self.canvas.create_polygon((square[1]+1)*self.size-16, square[0]*self.size, (square[1]+1)*self.size, square[0]*self.size, (square[1]+1)*self.size, square[0]*self.size+16, fill = '#1C9005')
-        self.canvas.create_polygon((square[1]+1)*self.size-16, (square[0]+1)*self.size, (square[1]+1)*self.size, (square[0]+1)*self.size, (square[1]+1)*self.size, (square[0]+1)*self.size-16, fill = '#1C9005')
-        self.canvas.create_polygon(square[1]*self.size, (square[0]+1)*self.size-16, square[1]*self.size, (square[0]+1)*self.size, square[1]*self.size+16, (square[0]+1)*self.size, fill = '#1C9005')
+        self.canvas.create_polygon(square[1]*self.size, square[0]*self.size, square[1]*self.size, square[0]*self.size+16, square[1]*self.size+16, square[0]*self.size, fill = '#1C9005', tags = f'{square[0]}{square[1]}')
+        self.canvas.create_polygon((square[1]+1)*self.size-16, square[0]*self.size, (square[1]+1)*self.size, square[0]*self.size, (square[1]+1)*self.size, square[0]*self.size+16, fill = '#1C9005', tags = f'{square[0]}{square[1]}')
+        self.canvas.create_polygon((square[1]+1)*self.size-16, (square[0]+1)*self.size, (square[1]+1)*self.size, (square[0]+1)*self.size, (square[1]+1)*self.size, (square[0]+1)*self.size-16, fill = '#1C9005', tags = f'{square[0]}{square[1]}')
+        self.canvas.create_polygon(square[1]*self.size, (square[0]+1)*self.size-16, square[1]*self.size, (square[0]+1)*self.size, square[1]*self.size+16, (square[0]+1)*self.size, fill = '#1C9005', tags = f'{square[0]}{square[1]}')
 
     def load_images(self):
         pngs = listdir('pieces')
@@ -98,7 +111,11 @@ class BoardVisualiser(tkinter.Frame):
         x, y = int(event.x/self.size), int(event.y/self.size)
         self.clicked = True
         print('visualiser:', self.clicked)
-        self.current_coordinates = (y,x)
+        if self.color == 'w':
+            self.current_coordinates = (y,x)
+        else:
+            self.current_coordinates = (7-y, 7-x)
+        
         print('in get_coord')
         self.wait_state.set(1)
 

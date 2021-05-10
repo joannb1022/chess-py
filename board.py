@@ -52,6 +52,7 @@ class Board:
     def move_piece(self, s_pos, t_pos, real_move = False):
         
         s_square = self.board[s_pos[0]][s_pos[1]]
+        t_square = self.board[t_pos[0]][t_pos[1]]
         curr_move = move.Move(s_square.get_piece(), s_pos, t_pos, self.board[t_pos[0]][t_pos[1]].piece)
 
         if real_move:
@@ -60,6 +61,7 @@ class Board:
                 if piece is not None:
                     piece.en_passant_decreasing = False
                     piece.en_passant_increasing = False
+            self.en_passant = []
 
         #s_square = self.board[s_pos[0]][s_pos[1]]
 
@@ -102,15 +104,26 @@ class Board:
                         p_square.piece.en_passant_decreasing = True
                         self.en_passant.append((t_pos[0], t_pos[1]+1))
 
-            elif s_square.piece.en_passant_increasing and t_pos[1]-s_pos[1] == 1 and real_move:
-                self.board[s_pos[0]][t_pos[1]].remove_piece()
-                curr_move.en_passant = True
-            elif s_square.piece.en_passant_decreasing and t_pos[1]-s_pos[1] == -1 and real_move:
+            #elif s_square.piece.en_passant_increasing and t_pos[1]-s_pos[1] == 1 and real_move:
+            # elif t_square.piece is None and t_pos[1]-s_pos[1] == 1 and real_move:
+            #     self.board[s_pos[0]][t_pos[1]].remove_piece()
+            #     curr_move.en_passant = True
+            # #elif s_square.piece.en_passant_decreasing and t_pos[1]-s_pos[1] == -1 and real_move:
+            # elif t_square.piece is None and t_pos[1]-s_pos[1] == -1 and real_move:
+            #     self.board[s_pos[0]][t_pos[1]].remove_piece()
+            #     curr_move.en_passant = True
+
+            elif t_square.piece is None and abs(t_pos[1]-s_pos[1]) == 1 and real_move:
                 self.board[s_pos[0]][t_pos[1]].remove_piece()
                 curr_move.en_passant = True
 
             if t_pos[0] == 0 or t_pos[0] == 7:
                 curr_move.promotion = True
+
+            # if real_move:
+            #     s_square.piece.en_passant_decreasing = False
+            #     s_square.piece.en_passant_increasing = False
+            #     s_square.piece.can_move_two = False
 
         piece = s_square.remove_piece()
 

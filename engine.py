@@ -19,7 +19,8 @@ class Engine:
     def run(self):
         while True:
             self.game.print_board()
-            self.visualiser.draw(self.turn)
+            #self.visualiser.draw(self.turn)
+            self.visualiser.draw()
 
             if(self.game.is_checkmate(self.turn)):
                 print(f"CHECKMATE, {self.turn} LOSES")
@@ -32,27 +33,27 @@ class Engine:
             self.chosen_square = None
             if self.turn == 'w':
                 self.turn = 'b'
+                self.visualiser.color = 'b'
+                self.visualiser.prev_color = 'w'
             else:
                 self.turn = 'w'
+                self.visualiser.color = 'w'
+                self.visualiser.prev_color = 'b'
 
     def make_move(self, color):
         while True:
 
-            print("Select square:")
+            print("1Select square:")
             self.visualiser.parent.wait_variable(self.visualiser.wait_state)
             temp_square = self.visualiser.current_coordinates
             self.visualiser.set_wait_state()
-            # temp_square = (int(input()), int(input()))
-
-            #temp_square = self.visualiser.current_coordinates
-
+            self.visualiser.set_squares_to_change([])
 
             temp_piece = self.game.board[temp_square[0]][temp_square[1]].piece
 
             while temp_piece is None or temp_piece.color != color:
-                print("Select square:")
+                print("2Select square:")
 
-                # temp_square = (int(input()), int(input()))
                 self.visualiser.parent.wait_variable(self.visualiser.wait_state)
                 temp_square = self.visualiser.current_coordinates
                 self.visualiser.set_wait_state()
@@ -63,33 +64,40 @@ class Engine:
             self.chosen_square = temp_square
 
             available_squares = self.game.get_moves(self.chosen_square, self.turn)
+            self.visualiser.set_squares_to_change(self.visualiser.squares_to_highlight)
             self.visualiser.set_squares_to_highlight(available_squares)
 
             print(self.visualiser.squares_to_highlight)
 
-            self.visualiser.draw(self.turn)
+            self.visualiser.draw()
 
             flag = 1
             while flag:
                 print("Select target square:")
 
-                # self.target_square = (int(input()), int(input()))
                 self.visualiser.parent.wait_variable(self.visualiser.wait_state)
                 self.target_square = self.visualiser.current_coordinates
                 self.visualiser.set_wait_state()
 
                 if self.target_square not in available_squares:
                     self.chosen_square = self.target_square
-                    available_squares = self.game.get_moves(self.chosen_square, self.turn)
-                    self.visualiser.set_squares_to_highlight(available_squares)
-                    self.visualiser.draw(self.turn)
+                    t_piece, t_color = self.game.get_piece(self.target_square)
+
+                    if t_piece is None or t_color != color:
+                        self.visualiser.set_squares_to_change(self.visualiser.squares_to_highlight)
+                        self.visualiser.set_squares_to_highlight([])
+                    else:
+                        available_squares = self.game.get_moves(self.chosen_square, self.turn)
+                        self.visualiser.set_squares_to_change(self.visualiser.squares_to_highlight)
+                        self.visualiser.set_squares_to_highlight(available_squares)
+            
+                    self.visualiser.draw()
 
                     curr_piece = self.game.board[self.chosen_square[0]][self.chosen_square[1]].piece
 
                     while not available_squares or curr_piece is None or curr_piece.color != color:
-                        print("Select square:")
+                        print("3Select square:")
 
-                        # self.chosen_square = (int(input()), int(input()))
                         self.visualiser.parent.wait_variable(self.visualiser.wait_state)
                         self.chosen_square = self.visualiser.current_coordinates
                         self.visualiser.set_wait_state()
@@ -97,8 +105,11 @@ class Engine:
 
                         curr_piece = self.game.board[self.chosen_square[0]][self.chosen_square[1]].piece
                         available_squares = self.game.get_moves(self.chosen_square, self.turn)
-                        self.visualiser.set_squares_to_highlight(available_squares)
-                        self.visualiser.draw(self.turn)
+
+                        if curr_piece is not None and curr_piece.color == color:
+                            self.visualiser.set_squares_to_change(self.visualiser.squares_to_highlight)
+                            self.visualiser.set_squares_to_highlight(available_squares)
+                            self.visualiser.draw()
 
                     self.target_square = None
                 else:
@@ -120,7 +131,7 @@ class Engine:
             promotion_piece = self.promotion_pieces[piece[1]]
             self.game.board[last_move.end_pos[0]][last_move.end_pos[1]].place_piece(promotion_piece(piece[0]))
             self.visualiser.set_squares_to_change([last_move.end_pos])
-            self.visualiser.draw(self.turn)
+            self.visualiser.draw()
 
         self.visualiser.set_squares_to_change(new_squares)
         self.visualiser.set_squares_to_highlight([])
