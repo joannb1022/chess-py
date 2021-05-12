@@ -242,14 +242,14 @@ class InitWindow():
         # tkinter.Frame.__init__(self, parent)
 
         self.parent = parent
-        self.size = 400
+        self.size = 300
         self.parent.geometry(f'{self.size}x{self.size}')
         self.frame = tkinter.Frame(self.parent)
-        self.label = tkinter.Label(self.parent, text="Hello")
+        self.label = tkinter.Label(self.parent, text="Choose time option: ", font=("Arial",18,""))
         self.time_array = [1, 2, 5, 10]
         self.chosen_time = None
 
-        self.label.pack()
+        self.label.place(x = 40, y = 10)
         self.frame.pack()
 
         self.load_buttons()
@@ -257,12 +257,12 @@ class InitWindow():
         self.parent.wait_window(self.parent)
 
     def load_buttons(self):
-        start_button = tkinter.Button(self.parent, text = 'Start', bd = '5' ,command = self.destroy_win)
-        start_button.pack(side = tkinter.BOTTOM)
+        start_button = tkinter.Button(self.parent, text = 'Start',font=("Arial",18,""), bd = '5' ,command = self.destroy_win)
+        start_button.place(x = 100, y = 200)
 
         for i, time in enumerate(self.time_array):
-            b = tkinter.Button(self.parent,text = f'{time}', command = lambda i=i: self.choose_time(i))
-            b.pack(side = tkinter.LEFT)
+            b = tkinter.Button(self.parent,text = f'{time}',font=("Arial",18,""), command = lambda i=i: self.choose_time(i))
+            b.place(x = 50 + i*50, y = 100)
 
     def choose_time(self, i):
         self.chosen_time = self.time_array[i]
