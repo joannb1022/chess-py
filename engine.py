@@ -3,6 +3,8 @@ import gui
 import tkinter
 import pieces
 from time import sleep
+from gui import PromotionWindow, InitWindow
+from gui import Checkmate, Clock
 
 class Engine:
     def __init__(self, parent):
@@ -18,18 +20,30 @@ class Engine:
 
         self.visualiser.pack()
 
+
+    # def clocks(self):
+    #     self.time_option = self.init_win.chosen_time
+    #     self.visualiser.set_clocks(self.time_option)
+
     def run(self):
         self.init_win = self.visualiser.start_game()
+
+        #wszystko zwiazane z zegarem (w osobnym okienku), pewnie mozna to wrzucic wszystko w jedna funkcje
+        self.clock = self.visualiser.open_new_window(Clock)
         self.time_option = self.init_win.chosen_time
+        self.clock.set_clocks(self.time_option)
+        self.clock.start_clock()
+
+        # self.clocks()
+        # self.visualiser.start_clock()
+
         print(self.time_option)
         while True:
-            self.game.print_board()
-            #self.visualiser.draw(self.turn)
+            # self.game.print_board()
             self.visualiser.draw()
-
             if(self.game.is_checkmate(self.turn)):
                 # print(f"CHECKMATE, {self.turn} LOSES")
-                self.visualiser.show_checkmate(self.turn)
+                self.visualiser.open_new_window(Checkmate, self.turn)
                 self.end_game() #na razie tam jest sam exit ale moze bedzie cos jeszcze
                 break
             elif self.game.is_stalemate(self.turn):
@@ -132,7 +146,7 @@ class Engine:
         if last_move.castle:
             new_squares += last_move.castle
         if last_move.promotion:
-            self.promotion_win = self.visualiser.promotion_window(self.turn)
+            self.promotion_win = self.visualiser.open_new_window(PromotionWindow, self.turn)
             piece = self.promotion_win.chosen_piece
             promotion_piece = self.promotion_pieces[piece[1]]
             self.game.board[last_move.end_pos[0]][last_move.end_pos[1]].place_piece(promotion_piece(piece[0]))
@@ -141,6 +155,7 @@ class Engine:
 
         self.visualiser.set_squares_to_change(new_squares)
         self.visualiser.set_squares_to_highlight([])
+
 
 
 

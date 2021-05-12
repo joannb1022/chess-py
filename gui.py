@@ -5,6 +5,7 @@ import os
 from time import sleep
 from time import strftime
 
+
 class BoardVisualiser(tkinter.Frame):
 
     def __init__(self, parent, board, size = 64):
@@ -33,9 +34,8 @@ class BoardVisualiser(tkinter.Frame):
         self.clock_black = tkinter.Label()
 
         self.load_images()
-        #self.draw('w')
         self.draw()
-        self.show_clocks()
+        # self.show_clocks()
 
     def start_game(self):
         self.new = tkinter.Toplevel(self.parent)
@@ -135,36 +135,62 @@ class BoardVisualiser(tkinter.Frame):
         print('in get_coord')
         self.wait_state.set(1)
 
-    def promotion_window(self, color):
-        self.new = tkinter.Toplevel(self.parent)
-        self.new_window = PromotionWindow(self.new, color)
-        return self.new_window
-
     def set_wait_state(self):
         self.wait_state = tkinter.IntVar()
 
-    def show_clocks(self):
-        hour = strftime("%H")
-        minute = strftime("%M")
-        second = strftime("%S")
-        self.clock_black.config(text = hour + ":" + minute + ":" + second )
-        self.clock_black.after(1000, self.show_clocks)
-        self.clock_black.pack(side = tkinter.RIGHT)
+    # def show_clocks(self):
+    #     # hour = strftime("%H")
+    #     # minute = strftime("%M")
+    #     # second = strftime("%S")
+    #     self.min_w = tkinter.StringVar()
+    #     self.sec_w = tkinter.StringVar()
+    #     self.min_w.set("00")
+    #     self.sec_w.set("00")
+    #
+    #     self.minutes_white= tkinter.Label(self.parent, width=3, font=("Arial",18,""), textvariable = self.min_w)
+    #     self.minutes_white.place(x=600,y=20)
+    #     self.seconds_white = tkinter.Label(self.parent, width=3, font=("Arial",18,""), textvariable = self.sec_w)
+    #     self.seconds_white.place(x = 250, y = 20)
+    #
+    #     # self.minutes_black = tkinter.Label(self.parent, width=3, font=("Arial",18,""), textvariable = self.min_w)
+    #     # self.minutes_black.place(x=130,y=40)
+    #
+    #
+    # def set_clocks(self, time):
+    #     self.min_w.set(f'{time}')
+    #     # self.min_b.set
+    #
+    # def start_clock(self):
+    #     userinput = int(self.min_w.get())*60 + int(self.sec_w.get())
+    #     while userinput > -1:
+    #         mins, secs = divmod (userinput, 60)
+    #         self.min_w.set(f"{mins}")
+    #         self.sec_w.set(f'{secs}')
+    #         self.parent.update()
+    #         sleep(1)
+    #
+    #         userinput-=1
 
-        self.clock_white.config(text = hour + ":" + minute + ":" + second)
-        self.clock_white.after(1000, self.show_clocks)
-        self.clock_white.pack(side = tkinter.RIGHT)
-
-    def start_clock():
-        print("ehj")
 
     def stop_clock():
         print("rgr")
 
-    def show_checkmate(self, color):
+
+    def open_new_window(self, _class, color = None):
         self.new = tkinter.Toplevel(self.parent)
-        self.new_window = Checkmate(self.new, color)
-        self.parent.destroy()
+        new_window = _class(self.new, color)
+        return new_window
+
+    #tu sa takie same funkcje otwierajace nowe okna
+    # def promotion_window(self, color):
+    #     self.new = tkinter.Toplevel(self.parent)
+    #     self.new_window = PromotionWindow(self.new, color)
+    #     return self.new_window
+    #
+    # def show_checkmate(self, color):
+    #     self.new = tkinter.Toplevel(self.parent)
+    #     self.new_window = Checkmate(self.new, color)
+    #     self.parent.destroy()
 
 class PromotionWindow(tkinter.Frame):
     def __init__(self, parent, color):
@@ -255,6 +281,47 @@ class Checkmate():
         label = tkinter.Label(self.parent, text=f"CHECKMATE, {color} LOSES").place(x = 200, y = 100)
 
         self.parent.wait_window(self.parent)
+
+class Clock():
+    def __init__(self, parent, color):
+
+        self.parent = parent
+        self.parent.geometry("450x300")
+
+        frame = tkinter.Frame(self.parent)
+
+        self.show_clocks()
+
+    def show_clocks(self):
+        self.min_w = tkinter.StringVar()
+        self.sec_w = tkinter.StringVar()
+        self.min_w.set("00")
+        self.sec_w.set("00")
+
+        self.minutes_white= tkinter.Label(self.parent, width=3, font=("Arial",18,""), textvariable = self.min_w)
+        self.minutes_white.place(x=130,y=20)
+        self.seconds_white = tkinter.Label(self.parent, width=3, font=("Arial",18,""), textvariable = self.sec_w)
+        self.seconds_white.place(x = 250, y = 20)
+
+        # self.minutes_black = tkinter.Label(self.parent, width=3, font=("Arial",18,""), textvariable = self.min_w)
+        # self.minutes_black.place(x=130,y=40)
+
+
+    def set_clocks(self, time):
+        self.min_w.set(f'{time}')
+        # self.min_b.set
+
+    def start_clock(self):
+        userinput = int(self.min_w.get())*60 + int(self.sec_w.get())
+        while userinput > -1:
+            mins, secs = divmod (userinput, 60)
+            self.min_w.set(f"{mins}")
+            self.sec_w.set(f'{secs}')
+            self.parent.update()
+            sleep(1)
+
+            userinput-=1
+
 
 
 if __name__ == "__main__":
