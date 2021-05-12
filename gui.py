@@ -171,9 +171,9 @@ class BoardVisualiser(tkinter.Frame):
     #
     #         userinput-=1
 
-
-    def stop_clock():
-        print("rgr")
+    #
+    # def stop_clock():
+    #     print("rgr")
 
 
     def open_new_window(self, _class, color = None):
@@ -287,12 +287,20 @@ class Clock():
 
         self.parent = parent
         self.parent.geometry("450x300")
+        self.running = False
+
 
         frame = tkinter.Frame(self.parent)
 
-        self.show_clocks()
+        self.widgets()
 
-    def show_clocks(self):
+    def widgets(self):
+        self.stop_button = tkinter.Button(self.parent, text = "Stop", command = self.stop_clock)
+        self.stop_button.pack()
+        self.start_button = tkinter.Button(text = "Start", command=self.start)
+        self.start_button.pack()
+
+
         self.min_w = tkinter.StringVar()
         self.sec_w = tkinter.StringVar()
         self.min_w.set("00")
@@ -306,21 +314,37 @@ class Clock():
         # self.minutes_black = tkinter.Label(self.parent, width=3, font=("Arial",18,""), textvariable = self.min_w)
         # self.minutes_black.place(x=130,y=40)
 
-
     def set_clocks(self, time):
         self.min_w.set(f'{time}')
+        self.time_total = int(self.min_w.get())*60 + int(self.sec_w.get())
+        self.running = True
+        self.clock()
         # self.min_b.set
 
-    def start_clock(self):
-        userinput = int(self.min_w.get())*60 + int(self.sec_w.get())
-        while userinput > -1:
-            mins, secs = divmod (userinput, 60)
-            self.min_w.set(f"{mins}")
-            self.sec_w.set(f'{secs}')
-            self.parent.update()
-            sleep(1)
+    def clock(self):
+        if self.running == True:
 
-            userinput-=1
+            # returns 3600/60 = 60 with 0 left: so that's 60 min, 0 seconds
+            self.mins, self.secs = divmod(self.time_total,60)
+
+            self.min_w.set("{0:02d}".format(self.mins))
+            self.sec_w.set("{0:02d}".format(self.secs))
+
+            self.parent.update()
+            #time.sleep(1)
+            self.parent.after(1000, self.clock)  # wait 1 second, re-call clock
+
+            if self.time_total == 0:
+                self.running = False
+            self.time_total -= 1
+
+
+    def stop_clock(self):
+        self.running = False
+
+    def start(self):
+        self.running = True
+
 
 
 

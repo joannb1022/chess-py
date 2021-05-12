@@ -32,7 +32,6 @@ class Engine:
         self.clock = self.visualiser.open_new_window(Clock)
         self.time_option = self.init_win.chosen_time
         self.clock.set_clocks(self.time_option)
-        self.clock.start_clock()
 
         # self.clocks()
         # self.visualiser.start_clock()
@@ -155,9 +154,6 @@ class Engine:
 
         self.visualiser.set_squares_to_change(new_squares)
         self.visualiser.set_squares_to_highlight([])
-
-
-
 
         def end_game(self):
             exit()
