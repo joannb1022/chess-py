@@ -27,18 +27,9 @@ class Engine:
 
     def run(self):
         self.init_win = self.visualiser.start_game()
-
-        #wszystko zwiazane z zegarem (w osobnym okienku), pewnie mozna to wrzucic wszystko w jedna funkcje
-        self.clock = self.visualiser.open_new_window(Clock)
-        self.time_option = self.init_win.chosen_time
-        self.clock.set_clocks(self.time_option)
-
-        # self.clocks()
-        # self.visualiser.start_clock()
-
-        print(self.time_option)
+        self.set_clocks()
         while True:
-            # self.game.print_board()
+
             self.visualiser.draw()
             if(self.game.is_checkmate(self.turn)):
                 # print(f"CHECKMATE, {self.turn} LOSES")
@@ -50,6 +41,9 @@ class Engine:
                 break
             self.make_move(self.turn)
             self.chosen_square = None
+
+            #to stop i start trzeba jakos ladnie gdzies wstawic
+            self.clocks.stop_clock(self.turn)
             if self.turn == 'w':
                 self.turn = 'b'
                 self.visualiser.color = 'b'
@@ -58,6 +52,7 @@ class Engine:
                 self.turn = 'w'
                 self.visualiser.color = 'w'
                 self.visualiser.prev_color = 'b'
+            # self.clocks.start_clock(self.turn)
 
     def make_move(self, color):
         while True:
@@ -154,6 +149,15 @@ class Engine:
 
         self.visualiser.set_squares_to_change(new_squares)
         self.visualiser.set_squares_to_highlight([])
+
+
+
+    def set_clocks(self):
+        #wszystko zwiazane z zegarem (w osobnym okienku), pewnie mozna to wrzucic wszystko w jedna funkcje
+        self.clocks = self.visualiser.open_new_window(Clock)
+        self.time_option = self.init_win.chosen_time
+        self.clocks.set_clocks(self.time_option)
+
 
         def end_game(self):
             exit()
