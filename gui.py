@@ -39,11 +39,16 @@ class BoardVisualiser(tkinter.Frame):
     def draw(self):
         print(len(self.squares_to_change))
 
-        if self.color != self.prev_color:
-            self.squares_to_change = []
-            for i in range(8):
-                for j in range(8):
-                    self.squares_to_change.append((i,j))
+        # if self.color != self.prev_color:
+        #     self.squares_to_change = []
+        #     for i in range(8):
+        #         for j in range(8):
+        #             self.squares_to_change.append((i,j))
+        
+        self.squares_to_change = []
+        for i in range(8):
+            for j in range(8):
+                self.squares_to_change.append((i,j))
 
         for el in self.squares_to_change:
             self.canvas.delete(f'{el[0]}{el[1]}')
