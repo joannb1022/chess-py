@@ -3,6 +3,8 @@ import board
 from os import listdir
 import os
 from time import sleep
+from time import strftime
+
 
 class BoardVisualiser(tkinter.Frame):
 
@@ -16,10 +18,11 @@ class BoardVisualiser(tkinter.Frame):
         self.squares_to_highlight = []
         self.pieces = {}
         self.current_coordinates = (None, None)
-        self.clicked = False
-        self.new_window = None
         self.color = 'w'
         self.prev_color = 'w'
+
+
+        self.new_window = None
         self.wait_state = tkinter.IntVar()
 
         tkinter.Frame.__init__(self, parent)
@@ -28,16 +31,21 @@ class BoardVisualiser(tkinter.Frame):
         self.canvas.pack()
         self.parent.bind('<Button>', self.get_coord)
 
-        self.load_images()
-        print(self.pieces)
-        #self.draw('w')
-        self.draw()
+        # self.clock_white = tkinter.Label()
+        # self.clock_black = tkinter.Label()
 
-    def test(self, event):
-        print('test')
+        self.load_images()
+        self.draw()
+        # self.show_clocks()
+
+    def start_game(self):
+        self.new = tkinter.Toplevel(self.parent)
+        self.new.attributes('-topmost', True)
+        self.new_window = InitWindow(self.new)
+        return self.new_window
 
     def draw(self):
-        print(len(self.squares_to_change))
+        # print(len(self.squares_to_change))
 
         # if self.color != self.prev_color:
         #     self.squares_to_change = []
@@ -45,17 +53,17 @@ class BoardVisualiser(tkinter.Frame):
         #         for j in range(8):
         #             self.squares_to_change.append((i,j))
         
+        #self.squares_to_change = []
+        #for i in range(8):
+        #    for j in range(8):
+        #        self.squares_to_change.append((i,j))
+
+
+
         self.squares_to_change = []
         for i in range(8):
             for j in range(8):
                 self.squares_to_change.append((i,j))
-
-        for el in self.squares_to_change:
-            self.canvas.delete(f'{el[0]}{el[1]}')
-            self.canvas.delete(f'{7-el[0]}{7-el[1]}')
-        for el in self.squares_to_highlight:
-            self.canvas.delete(f'{el[0]}{el[1]}')
-            self.canvas.delete(f'{7-el[0]}{7-el[1]}')
 
         #print(self.canvas.find_all())
         self.canvas.delete("all")
@@ -74,7 +82,7 @@ class BoardVisualiser(tkinter.Frame):
 
         for el in self.squares_to_change:
             if self.board.get_piece(el) != (None, None):
-                
+
                 file_name = self.board.board[el[0]][el[1]].get_image()
                 piece_image = self.pieces[file_name[7:9]]
 
@@ -83,6 +91,7 @@ class BoardVisualiser(tkinter.Frame):
                 else:
                     self.canvas.create_image((self.size*(7-el[1]+0.5), self.size*(7-el[0]+0.5)), image = piece_image, tag = f'{7-el[0]}{7-el[1]}')
 
+        print("Squarest to highlight", self.squares_to_highlight)
         for el in self.squares_to_highlight:
             if self.board.get_piece(el) != (None, None):
                 if self.color == 'w':
@@ -123,22 +132,66 @@ class BoardVisualiser(tkinter.Frame):
             self.current_coordinates = (y,x)
         else:
             self.current_coordinates = (7-y, 7-x)
-        
+
         print('in get_coord')
         self.wait_state.set(1)
-
-    def promotion_window(self, color):
-        self.new = tkinter.Toplevel(self.parent)
-        self.new_window = PromotionWindow(self.new, color)
-        return self.new_window
 
     def set_wait_state(self):
         self.wait_state = tkinter.IntVar()
 
-    # def close_windows(self):
+    # def show_clocks(self):
+    #     # hour = strftime("%H")
+    #     # minute = strftime("%M")
+    #     # second = strftime("%S")
+    #     self.min_w = tkinter.StringVar()
+    #     self.sec_w = tkinter.StringVar()
+    #     self.min_w.set("00")
+    #     self.sec_w.set("00")
+    #
+    #     self.minutes_white= tkinter.Label(self.parent, width=3, font=("Arial",18,""), textvariable = self.min_w)
+    #     self.minutes_white.place(x=600,y=20)
+    #     self.seconds_white = tkinter.Label(self.parent, width=3, font=("Arial",18,""), textvariable = self.sec_w)
+    #     self.seconds_white.place(x = 250, y = 20)
+    #
+    #     # self.minutes_black = tkinter.Label(self.parent, width=3, font=("Arial",18,""), textvariable = self.min_w)
+    #     # self.minutes_black.place(x=130,y=40)
+    #
+    #
+    # def set_clocks(self, time):
+    #     self.min_w.set(f'{time}')
+    #     # self.min_b.set
+    #
+    # def start_clock(self):
+    #     userinput = int(self.min_w.get())*60 + int(self.sec_w.get())
+    #     while userinput > -1:
+    #         mins, secs = divmod (userinput, 60)
+    #         self.min_w.set(f"{mins}")
+    #         self.sec_w.set(f'{secs}')
+    #         self.parent.update()
+    #         sleep(1)
+    #
+    #         userinput-=1
+
+    #
+    # def stop_clock():
+    #     print("rgr")
+
+
+    def open_new_window(self, _class, color = None):
+        self.new = tkinter.Toplevel(self.parent)
+        new_window = _class(self.new, color)
+        return new_window
+
+    #tu sa takie same funkcje otwierajace nowe okna
+    # def promotion_window(self, color):
+    #     self.new = tkinter.Toplevel(self.parent)
+    #     self.new_window = PromotionWindow(self.new, color)
+    #     return self.new_window
+    #
+    # def show_checkmate(self, color):
+    #     self.new = tkinter.Toplevel(self.parent)
+    #     self.new_window = Checkmate(self.new, color)
     #     self.parent.destroy()
-
-
 
 class PromotionWindow(tkinter.Frame):
     def __init__(self, parent, color):
@@ -150,26 +203,30 @@ class PromotionWindow(tkinter.Frame):
         self.size = 64
         self.images = {}
         self.pieces = [f'{color}R', f'{color}N', f'{color}B', f'{color}Q']
+        self.chosen_piece = None
+
+
+        self.widgets()
+
+        self.parent.wait_window(self.parent)
+
+
+    def widgets(self):
+
         self.label = tkinter.Label(self.parent, text="Choose piece")
         self.label.pack()
         self.frame.pack()
-        self.chosen_piece = None
 
         self.load_images()
         self.load_buttons()
-        self.parent.wait_window(self.parent)
 
-        # self.canvas = tkinter.Canvas(self, width = 4*self.size, height = self.size)
-        # self.canvas.pack()
-        # self.post_images()
-        # self.parent.bind('<Button>', self.get_piece)
 
     def load_buttons(self):
         self.buttons = [] #nie wiem czy dawac to self, bo bez tego tez zadziala chyba to nie jest nam potrzebne potem
         for i, piece in enumerate(self.pieces):
             photo = self.images[piece]
-            b = tkinter.Button(self.parent, height = 64, width = 64, image = photo, command = lambda i=i: self.button_press(i))
-            b.image = photo  #bez tego mi sie nie ladowaly (cos z tym garbage collector)
+            b = tkinter.Button(self.parent, height = self.size, width = self.size, image = photo, command = lambda i=i: self.button_press(i))
+            b.image = photo
             b.pack(side = tkinter.LEFT)
             self.buttons.append(b)
 
@@ -178,10 +235,6 @@ class PromotionWindow(tkinter.Frame):
         self.chosen_piece = self.pieces[i]
         self.parent.destroy()
 
-    # def get_piece(self, event):
-    #     x = int(event.x/self.size)
-    #     print(x)
-    #     return self.pieces[x]
 
     def load_images(self):
         for file_name in self.pieces:
@@ -190,14 +243,131 @@ class PromotionWindow(tkinter.Frame):
             piece_image = tkinter.PhotoImage(file=image_path)
             self.images[file_name] = piece_image
 
-    # def post_images(self):
-    #     for i in range(4):
-    #         print(self.images[self.pieces[i]])
-    #         #self.canvas.create_image((self.size*(i+0.5), self.size*(i+0.5)), image = self.images[self.pieces[i]])
-    #         self.canvas.create_rectangle(0, 0, 100, 100, fill = "red")
-    #         self.canvas.create_image((0, 0), image = self.images[self.pieces[i]])
+
+class InitWindow():
+    def __init__(self, parent):
+        # tkinter.Frame.__init__(self, parent)
+
+        self.parent = parent
+        self.size = 300
+        self.parent.geometry(f'{self.size}x{self.size}')
+        self.frame = tkinter.Frame(self.parent)
+
+        self.widgets()
+
+        self.parent.wait_window(self.parent)
+
+    def widgets(self):
+
+        self.label = tkinter.Label(self.parent, text="Choose time option: ", font=("Arial",18,""))
+        self.time_array = [1, 3, 5, 10]
+        self.chosen_time = None
+
+        self.label.place(x = 40, y = 10)
+        self.frame.pack()
+
+        start_button = tkinter.Button(self.parent, text = 'Start',font=("Arial",18,""), bd = '5' ,command = self.destroy_win)
+        start_button.place(x = 100, y = 200)
+
+        for i, time in enumerate(self.time_array):
+            b = tkinter.Button(self.parent,text = f'{time}',font=("Arial",18,""), command = lambda i=i: self.choose_time(i))
+            b.place(x = 50 + i*50, y = 100)
+
+    def choose_time(self, i):
+        self.chosen_time = self.time_array[i]
+
+    def destroy_win(self):
+        self.parent.destroy()
 
 
+class Checkmate():
+    def __init__(self, parent, color):
+
+        self.parent = parent
+        self.parent.geometry("450x300")
+
+        frame = tkinter.Frame(self.parent)
+        label = tkinter.Label(self.parent, text=f"CHECKMATE, {color} LOSES").place(x = 200, y = 100)
+
+        self.parent.wait_window(self.parent)
+
+class Clock(): #i tu moze ta hsistoria chyba tez
+    def __init__(self, parent, color):
+
+        self.parent = parent
+        self.parent.geometry("450x300")
+        self.running = False
+
+        frame = tkinter.Frame(self.parent)
+
+        self.widgets()
+        # self.create_clocks()
+    #
+    # #tu zaczelam ta opcje ze slownikami, chyba zadziala alen ie wiem czy to ma sens
+    # def create_clocks(self):
+    #     self.minutes = {'w': tkinter.StringVar(), 'b': tkinter.StringVar()}
+    #     self.seconds = {'w': tkinter.StringVar(), 'b': tkinter.StringVar()}
+    #     self.minutes['w'].set("00")
+    #
+    #     self.minutes_label = {'w': tkinter.Label(self.parent)}
+    #     self.seconds_label= {'w': tkinter.Label(self.parent)}
+    #
+    #     self.minutes_label['w'].config(width=3, font=("Arial",18,""), textvariable = self.minutes['w'])
+    #     self.minutes_label['w'].pack()
+
+
+
+    def widgets(self):
+
+        #to potem nie bedzie potrzebne teraz tylko do testow
+        self.stop_button = tkinter.Button(self.parent, text = "Stop", command = self.stop_clock)
+        self.stop_button.pack()
+        self.start_button = tkinter.Button(self.parent, text = "Start", command=self.start)
+        self.start_button.pack()
+
+
+        self.min_w = tkinter.StringVar()
+        self.sec_w = tkinter.StringVar()
+        self.min_w.set("00")
+        self.sec_w.set("00")
+
+        self.minutes_white= tkinter.Label(self.parent, width=3, font=("Arial",18,""), textvariable = self.min_w)
+        self.minutes_white.place(x=130,y=20)
+        self.seconds_white = tkinter.Label(self.parent, width=3, font=("Arial",18,""), textvariable = self.sec_w)
+        self.seconds_white.place(x = 250, y = 20)
+
+        # self.minutes_black = tkinter.Label(self.parent, width=3, font=("Arial",18,""), textvariable = self.min_w)
+        # self.minutes_black.place(x=130,y=40)
+
+    def set_clocks(self, time):
+        self.min_w.set(f'{time}')
+        self.time_total = int(self.min_w.get())*60 + int(self.sec_w.get())
+        self.running = True
+        self.clock()
+        # self.min_b.set
+
+    def clock(self):
+        if self.running == True:
+
+            self.mins, self.secs = divmod(self.time_total,60)
+
+            self.min_w.set("{0:02d}".format(self.mins))
+            self.sec_w.set("{0:02d}".format(self.secs))
+
+            self.parent.update()
+            self.parent.after(1000, self.clock)
+
+            if self.time_total == 0:
+                self.running = False
+            self.time_total -= 1
+
+            #na razie wszedzie ten kolor jest None bo jeszcze nie jest to dobrze zrobione
+    def stop_clock(self, color = None):
+        self.running = False
+
+    def start(self, color = None):
+        self.running = True
+        self.clock()
 
 if __name__ == "__main__":
     root = tkinter.Tk()

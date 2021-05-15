@@ -235,9 +235,11 @@ class Board:
 
                         res.append((el[0]+pos[0], el[1]+pos[1]))
 
-            if self.check_castling(pos, 1):
+            print(self.king_in_check[piece.color])
+
+            if self.check_castling(pos, 1):# and self.king_in_check[piece.color] == Checked_by.NONE:
                res.append((pos[0], pos[1]+2))
-            if self.check_castling(pos, -1):
+            if self.check_castling(pos, -1):# and self.king_in_check[piece.color] == Checked_by.NONE:
                res.append((pos[0], pos[1]-2))
 
 
@@ -257,19 +259,25 @@ class Board:
             directions = piece.get_directions()
             for el in directions:
                 i = pos[0]+el[0]
-
                 j = pos[1]+el[1]
 
-                if i > -1 and i < 8 and j > -1 and j < 8 and not self.discovers_check(el,pos):
-
-
-                    while i > -1 and i < 8 and j > -1 and j < 8 and self.board[i][j].is_empty():
+                counter = 1
+                #if i > -1 and i < 8 and j > -1 and j < 8 and not self.discovers_check(el,pos):
+                while i > -1 and i < 8 and j > -1 and j < 8 and self.board[i][j].is_empty():
+                    if not self.discovers_check((counter*el[0], counter*el[1]), pos):
                         res.append((i,j))
-                        i += el[0]
-                        j += el[1]
+                    i += el[0]
+                    j += el[1]
+                    counter += 1
+                    #while i > -1 and i < 8 and j > -1 and j < 8 and self.board[i][j].is_empty():
+                        #res.append((i,j))
+                        #i += el[0]
+                        #j += el[1]
 
-                    if i > -1 and i < 8 and j > -1 and j < 8 and self.board[i][j].piece.color != piece.color:
-                        res.append((i,j))
+                    #if i > -1 and i < 8 and j > -1 and j < 8 and self.board[i][j].piece.color != piece.color:
+                    #    res.append((i,j))
+                if i > -1 and i < 8 and j > -1 and j < 8 and self.board[i][j].piece.color != piece.color:
+                    res.append((i,j))
 
         return res
 
@@ -285,7 +293,7 @@ class Board:
         else:
             column = 0
 
-        if not self.board[king_pos[0]][column].piece.can_castle:
+        if self.board[king_pos[0]][column].piece is None or not self.board[king_pos[0]][column].piece.can_castle:
             return False
 
         squares_in_between = self.get_squares_in_between(king_pos, (king_pos[0], column))
@@ -447,6 +455,7 @@ class Board:
 
         return False
 
+
     def get_piece(self, pos):
         piece = self.board[pos[0]][pos[1]].get_piece()
         if piece is None:
@@ -470,8 +479,8 @@ class Board:
 
 
     def is_checkmate(self, color):
-
-        self.king_in_check[color] = Checked_by.NONE
+        
+        #self.king_in_check[color] = Checked_by.NONE
         #czyszczenie tablicy figur atakujących króla w przypadku wykonania ruchu przez gracza
         self.attackers = []
 
@@ -480,6 +489,7 @@ class Board:
         else:
             pos = self.black_king
 
+        #print("pos", pos)
         """
 
         czesc 1:
@@ -491,12 +501,23 @@ class Board:
 
         if self.is_in_check(color, res = self.attackers):
             #king_moves = self.get_legal_moves(pos)
+            print('is in check')
+
+            opponent_piece = self.attackers[0]
+
+            if len(self.attackers) == 2:
+                self.king_in_check[color] = Checked_by.TWO
+            elif isinstance(self.board[opponent_piece[0]][opponent_piece[1]].piece, pieces.Knight):
+                    self.king_in_check[color] = Checked_by.KNIGHT
+            else:
+                self.king_in_check[color] = Checked_by.ONE
+                print("checked_by_one")
 
             if self.get_legal_moves(pos):
                return False
 
             if len(self.attackers) == 2:
-                self.king_in_check[color] = Checked_by.TWO
+                #self.king_in_check[color] = Checked_by.TWO
                 print(self.attackers)
                 print("dwie atakuja")
                 return True
@@ -507,6 +528,7 @@ class Board:
                 else:
                     color2 = 'w'
 
+                print('w elsie')
                 """
                 czesc 2:
                 sprawdzamy, czy mozemy zbic figury, ktore atakuja figury, ktore szachuja krola
@@ -519,15 +541,16 @@ class Board:
                 attackers2 = []
 
                 #figura atakujaca krola
-                opponent_piece = self.attackers[0]
+                #opponent_piece = self.attackers[0]
                 #sprawdzamy, jakie figury atakuja opponent_piece
                 self.is_in_check(color2, res = attackers2, pos = opponent_piece)
                 # print(attackers2)
 
-                if isinstance(self.board[opponent_piece[0]][opponent_piece[1]].piece, pieces.Knight):
-                    self.king_in_check[color] = Checked_by.KNIGHT
-                else:
-                    self.king_in_check[color] = Checked_by.ONE
+                #if isinstance(self.board[opponent_piece[0]][opponent_piece[1]].piece, pieces.Knight):
+                #    self.king_in_check[color] = Checked_by.KNIGHT
+                #else:
+                #    self.king_in_check[color] = Checked_by.ONE
+                #    print("checked_by_one")
 
                 for el in attackers2:
 
@@ -567,6 +590,8 @@ class Board:
                                 return False
 
                 return True  #chyba?
+        else:
+            self.king_in_check[color] = Checked_by.NONE
 
         return False #bo jesli nie ma szacha, to na pewno nie ma mata
 
@@ -576,6 +601,8 @@ class Board:
         res = []
         if piece is None:
             return res
+
+        print("GET MOVES IN CHECK: ", self.king_in_check[piece.color])
 
         if self.king_in_check[piece.color] == Checked_by.TWO:
             if not isinstance(piece, pieces.King):
@@ -589,8 +616,8 @@ class Board:
             if isinstance(piece, pieces.King):
                 return self.get_legal_moves(pos)
             else:
-                if pos in legal_moves: #####
-                    return pos
+                if self.attackers[0] in legal_moves: #####
+                    return self.attackers
 
         elif self.king_in_check[piece.color] == Checked_by.ONE:
             if isinstance(piece, pieces.King):
@@ -600,6 +627,12 @@ class Board:
                 squares_in_check = self.get_squares_in_between(self.white_king, self.attackers[0])
             else:
                 squares_in_check = self.get_squares_in_between(self.black_king, self.attackers[0])
+
+            squares_in_check.append(self.attackers[0])
+
+            print("Squares in between: ", squares_in_check)
+
+            print('Legal moves:', legal_moves)
 
             for el in legal_moves:
                 if el in squares_in_check or el in self.attackers:

@@ -3,34 +3,50 @@ import gui
 import tkinter
 import pieces
 from time import sleep
+from gui import PromotionWindow, InitWindow
+from gui import Checkmate, Clock
 
 class Engine:
     def __init__(self, parent):
+        self.parent = parent
         self.game = board.Board()
-        self.visualiser = gui.BoardVisualiser(parent, self.game)
+        self.visualiser = gui.BoardVisualiser(self.parent, self.game)
         self.promotion_win = None
+        self.init_win = None
         self.turn = 'w'
         self.chosen_square = None
         self.target_square = None
         self.promotion_pieces = {'R': pieces.Rook, 'N': pieces.Knight, 'B': pieces.Bishop, 'Q': pieces.Queen}
+        self.time_option = None
+        self.end = False
 
         self.visualiser.pack()
 
-    def run(self):
-        while True:
-            self.game.print_board()
-            #self.visualiser.draw(self.turn)
-            self.visualiser.draw()
+        self.parent.protocol("WM_DELETE_WINDOW", self.end_game)
 
+    # def clocks(self):
+    #     self.time_option = self.init_win.chosen_time
+    #     self.visualiser.set_clocks(self.time_option)
+
+    def run(self):
+        self.init_win = self.visualiser.start_game()
+        self.set_clocks()
+        while not self.end:
+
+            self.visualiser.draw()
             if(self.game.is_checkmate(self.turn)):
-                print(f"CHECKMATE, {self.turn} LOSES")
+                # print(f"CHECKMATE, {self.turn} LOSES")
+                self.visualiser.open_new_window(Checkmate, self.turn)
+                self.end_game() #na razie tam jest sam exit ale moze bedzie cos jeszcze
                 break
             elif self.game.is_stalemate(self.turn):
                 print("DRAW")
                 break
             self.make_move(self.turn)
-
             self.chosen_square = None
+
+            #to stop i start trzeba jakos ladnie gdzies wstawic
+            self.clocks.stop_clock(self.turn)
             if self.turn == 'w':
                 self.turn = 'b'
                 self.visualiser.color = 'b'
@@ -39,22 +55,32 @@ class Engine:
                 self.turn = 'w'
                 self.visualiser.color = 'w'
                 self.visualiser.prev_color = 'b'
+            # self.clocks.start_clock(self.turn)
+        print("After end")
 
     def make_move(self, color):
         #while True:
 
         print("1Select square:")
         self.visualiser.parent.wait_variable(self.visualiser.wait_state)
+
+        if self.end:
+            return
+
         temp_square = self.visualiser.current_coordinates
         self.visualiser.set_wait_state()
         self.visualiser.set_squares_to_change([])
 
         temp_piece = self.game.board[temp_square[0]][temp_square[1]].piece
 
-        while temp_piece is None or temp_piece.color != color:
+        while temp_piece is None or temp_piece.color != color :
             print("2Select square:")
 
             self.visualiser.parent.wait_variable(self.visualiser.wait_state)
+            
+            if self.end:
+                return
+
             temp_square = self.visualiser.current_coordinates
             self.visualiser.set_wait_state()
 
@@ -71,11 +97,18 @@ class Engine:
 
         self.visualiser.draw()
 
+        if self.end:
+            return
+
         flag = 1
         while flag:
             print("Select target square:")
 
             self.visualiser.parent.wait_variable(self.visualiser.wait_state)
+            
+            if self.end:
+                return
+
             self.target_square = self.visualiser.current_coordinates
             self.visualiser.set_wait_state()
 
@@ -99,6 +132,10 @@ class Engine:
                     print("3Select square:")
 
                     self.visualiser.parent.wait_variable(self.visualiser.wait_state)
+                    
+                    if self.end:
+                        return
+
                     self.chosen_square = self.visualiser.current_coordinates
                     self.visualiser.set_wait_state()
 
@@ -126,7 +163,7 @@ class Engine:
         if last_move.castle:
             new_squares += last_move.castle
         if last_move.promotion:
-            self.promotion_win = self.visualiser.promotion_window(self.turn)
+            self.promotion_win = self.visualiser.open_new_window(PromotionWindow, self.turn)
             piece = self.promotion_win.chosen_piece
             promotion_piece = self.promotion_pieces[piece[1]]
             self.game.board[last_move.end_pos[0]][last_move.end_pos[1]].place_piece(promotion_piece(piece[0]))
@@ -137,6 +174,20 @@ class Engine:
         self.visualiser.set_squares_to_highlight([])
 
 
+
+    def set_clocks(self):
+        #wszystko zwiazane z zegarem (w osobnym okienku), pewnie mozna to wrzucic wszystko w jedna funkcje
+        self.clocks = self.visualiser.open_new_window(Clock)
+        self.time_option = self.init_win.chosen_time
+        self.clocks.set_clocks(self.time_option)
+
+
+    def end_game(self):
+        self.end = True
+        self.visualiser.wait_state.set(1)
+        self.parent.destroy()
+        #self.parent.quit()
+        #exit()
 
 if __name__ == "__main__":
     root = tkinter.Tk()
@@ -149,4 +200,5 @@ if __name__ == "__main__":
     e.run()
 
     #b.draw()
+    
     root.mainloop()
