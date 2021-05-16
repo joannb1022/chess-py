@@ -50,7 +50,7 @@ class Board:
 
 
     def move_piece(self, s_pos, t_pos, real_move = False):
-        
+
         s_square = self.board[s_pos[0]][s_pos[1]]
         t_square = self.board[t_pos[0]][t_pos[1]]
         curr_move = move.Move(s_square.get_piece(), s_pos, t_pos, self.board[t_pos[0]][t_pos[1]].piece)
@@ -276,7 +276,7 @@ class Board:
 
                     #if i > -1 and i < 8 and j > -1 and j < 8 and self.board[i][j].piece.color != piece.color:
                     #    res.append((i,j))
-                if i > -1 and i < 8 and j > -1 and j < 8 and self.board[i][j].piece.color != piece.color:
+                if i > -1 and i < 8 and j > -1 and j < 8 and self.board[i][j].piece.color != piece.color and not self.discovers_check((counter*el[0], counter*el[1]), pos):
                     res.append((i,j))
 
         return res
@@ -479,7 +479,7 @@ class Board:
 
 
     def is_checkmate(self, color):
-        
+
         #self.king_in_check[color] = Checked_by.NONE
         #czyszczenie tablicy figur atakujących króla w przypadku wykonania ruchu przez gracza
         self.attackers = []
@@ -569,7 +569,7 @@ class Board:
                 """
 
                 squares_under_check = self.get_squares_in_between(opponent_piece, pos)
-                
+
 
                 for el in squares_under_check:
                     #print(el)
@@ -644,7 +644,7 @@ class Board:
     def is_stalemate(self, color):
         if not self.king_in_check[color] == Checked_by.NONE:
             return False
-        
+
         for i in range(8):
             for j in range(8):
                 if self.board[i][j].piece is not None and self.board[i][j].piece.color == color and self.get_legal_moves((i,j)):
