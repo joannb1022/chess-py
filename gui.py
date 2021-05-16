@@ -24,6 +24,9 @@ class BoardVisualiser(tkinter.Frame):
         self.new_window = None
         self.wait_state = tkinter.IntVar()
 
+
+        self.move_history = Moves(self.parent)
+
         tkinter.Frame.__init__(self, parent)
 
         self.canvas = tkinter.Canvas(self, width = canvas_width + 300, height = canvas_height)
@@ -123,6 +126,8 @@ class BoardVisualiser(tkinter.Frame):
 
     def get_coord(self, event):
         x, y = int(event.x/self.size), int(event.y/self.size)
+        if x < 0 or y < 0 or x > 7 or y > 7:
+            return
         self.clicked = True
         print('visualiser:', self.clicked)
         if self.color == 'w':
@@ -130,7 +135,6 @@ class BoardVisualiser(tkinter.Frame):
         else:
             self.current_coordinates = (7-y, 7-x)
 
-        print('in get_coord')
         self.wait_state.set(1)
 
     def set_wait_state(self):
@@ -249,7 +253,10 @@ class Clock():
         self.parent = parent
         self.running = False
         self.color = color
+        self.job = self.parent.after(1000, self.clock)
+        self.end_game = False
         self.widgets()
+        
 
     def widgets(self):
 
@@ -279,7 +286,10 @@ class Clock():
             self.minutes.set("{0:02d}".format(mins))
             self.seconds.set("{0:02d}".format(secs))
 
-            self.parent.after(1000, self.clock)
+            if self.end_game:
+                return
+                
+            self.job = self.parent.after(1000, self.clock)
             self.parent.update()
 
             if self.total_times == 0:
@@ -295,6 +305,30 @@ class Clock():
         self.running = True
         self.clock()
 
+
+class Moves():
+    
+    def __init__(self, parent):
+        self.parent = parent
+        self.frame = tkinter.Frame(self.parent)
+        self.frame.place(x=600, y=400)
+        self.canvas = tkinter.Canvas(self.frame)
+        self.canvas.pack(side= tkinter.LEFT, fill = tkinter.BOTH, expand = 1)
+        self.scrollbar = tkinter.Scrollbar(self.frame, orient = tkinter.VERTICAL, command = self.canvas.yview)
+        self.scrollbar.pack(side=tkinter.RIGHT, fill = tkinter.Y)
+
+        self.canvas.configure(yscrollcommand = self.scrollbar.set)
+        self.canvas.bind('<Configure>', lambda x: self.canvas.configure(scrollregion = self.canvas.bbox('all')))
+
+        self.move_frame = tkinter.Frame(self.canvas)
+        self.canvas.create_window((50, 50), window = self.move_frame)
+
+        for i in range(100):
+            tkinter.Button(self.move_frame, text=f'{i} button').grid(row = i)
+            #text = tkinter.Text(self.move_frame)
+            #text.insert(tkinter.INSERT, f"{i}")
+
+        
 
 if __name__ == "__main__":
     root = tkinter.Tk()

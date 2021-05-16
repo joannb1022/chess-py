@@ -179,6 +179,10 @@ class Engine:
     def end_game(self):
         self.end = True
         self.visualiser.wait_state.set(1)
+        self.parent.after_cancel(self.visualiser.clock_white.job)
+        self.parent.after_cancel(self.visualiser.clock_black.job)
+        self.visualiser.clock_white.end_game = True
+        self.visualiser.clock_black.end_game = True
         self.parent.destroy()
         #self.parent.quit()
         #exit()
