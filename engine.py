@@ -11,8 +11,6 @@ class Engine:
         self.parent = parent
         self.game = board.Board()
         self.visualiser = gui.BoardVisualiser(self.parent, self.game)
-        self.promotion_win = None
-        self.init_win = None
         self.turn = 'w'
         self.chosen_square = None
         self.target_square = None
@@ -24,18 +22,14 @@ class Engine:
 
         self.parent.protocol("WM_DELETE_WINDOW", self.end_game)
 
-    # def clocks(self):
-    #     self.time_option = self.init_win.chosen_time
-    #     self.visualiser.set_clocks(self.time_option)
 
     def run(self):
         self.init_win = self.visualiser.start_game()
+        self.time_option = self.init_win.chosen_time
         self.set_clocks()
         while not self.end:
-
             self.visualiser.draw()
             if(self.game.is_checkmate(self.turn)):
-                # print(f"CHECKMATE, {self.turn} LOSES")
                 self.visualiser.open_new_window(Checkmate, self.turn)
                 self.end_game() #na razie tam jest sam exit ale moze bedzie cos jeszcze
                 break
@@ -44,9 +38,7 @@ class Engine:
                 break
             self.make_move(self.turn)
             self.chosen_square = None
-
-            #to stop i start trzeba jakos ladnie gdzies wstawic
-            self.clocks.stop_clock(self.turn)
+            self.clocks[self.turn].stop_clock()
             if self.turn == 'w':
                 self.turn = 'b'
                 self.visualiser.color = 'b'
@@ -55,7 +47,7 @@ class Engine:
                 self.turn = 'w'
                 self.visualiser.color = 'w'
                 self.visualiser.prev_color = 'b'
-            # self.clocks.start_clock(self.turn)
+            self.clocks[self.turn].start_clock()
         print("After end")
 
     def make_move(self, color):
@@ -77,7 +69,7 @@ class Engine:
             print("2Select square:")
 
             self.visualiser.parent.wait_variable(self.visualiser.wait_state)
-            
+
             if self.end:
                 return
 
@@ -105,7 +97,7 @@ class Engine:
             print("Select target square:")
 
             self.visualiser.parent.wait_variable(self.visualiser.wait_state)
-            
+
             if self.end:
                 return
 
@@ -123,7 +115,7 @@ class Engine:
                     available_squares = self.game.get_moves(self.chosen_square, self.turn)
                     self.visualiser.set_squares_to_change(self.visualiser.squares_to_highlight)
                     self.visualiser.set_squares_to_highlight(available_squares)
-        
+
                 self.visualiser.draw()
 
                 curr_piece = self.game.board[self.chosen_square[0]][self.chosen_square[1]].piece
@@ -132,7 +124,7 @@ class Engine:
                     print("3Select square:")
 
                     self.visualiser.parent.wait_variable(self.visualiser.wait_state)
-                    
+
                     if self.end:
                         return
 
@@ -176,10 +168,12 @@ class Engine:
 
 
     def set_clocks(self):
-        #wszystko zwiazane z zegarem (w osobnym okienku), pewnie mozna to wrzucic wszystko w jedna funkcje
-        self.clocks = self.visualiser.open_new_window(Clock)
-        self.time_option = self.init_win.chosen_time
-        self.clocks.set_clocks(self.time_option)
+        clock_white = self.visualiser.clock_white
+        clock_black = self.visualiser.clock_black
+        self.clocks = {'w':clock_white, 'b': clock_black}
+        self.clocks['w'].set_clocks(self.time_option)
+        self.clocks['b'].set_clocks(self.time_option)
+        self.clocks['w'].start_clock()
 
 
     def end_game(self):
@@ -200,5 +194,5 @@ if __name__ == "__main__":
     e.run()
 
     #b.draw()
-    
+
     root.mainloop()
