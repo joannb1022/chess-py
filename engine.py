@@ -15,7 +15,7 @@ class Engine:
         self.chosen_square = None
         self.target_square = None
         self.promotion_pieces = {'R': pieces.Rook, 'N': pieces.Knight, 'B': pieces.Bishop, 'Q': pieces.Queen}
-        self.time_option = None
+
         self.end = False
 
         self.visualiser.pack()
@@ -24,8 +24,7 @@ class Engine:
 
 
     def run(self):
-        self.init_win = self.visualiser.start_game()
-        self.time_option = self.init_win.chosen_time
+        self.start_game()
         self.set_clocks()
         while not self.end:
             self.visualiser.draw()
@@ -167,10 +166,20 @@ class Engine:
 
 
 
+    def start_game(self):
+        self.init_win = self.visualiser.start_game()
+        self.time_option = self.init_win.chosen_time
+        if not self.init_win.chosen_increment:
+            self.increment_option = 0
+        else:
+            self.increment_option = self.init_win.chosen_increment
+
     def set_clocks(self):
         clock_white = self.visualiser.clock_white
         clock_black = self.visualiser.clock_black
         self.clocks = {'w':clock_white, 'b': clock_black}
+        self.clocks['w'].set_increment(self.increment_option)
+        self.clocks['b'].set_increment(self.increment_option)
         self.clocks['w'].set_clocks(self.time_option)
         self.clocks['b'].set_clocks(self.time_option)
         self.clocks['w'].start_clock()

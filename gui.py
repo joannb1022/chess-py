@@ -217,7 +217,9 @@ class InitWindow():
 
         self.label = tkinter.Label(self.parent, text="Choose time option: ", font=("Arial",18,""))
         self.time_array = [1, 3, 5, 10]
+        self.increment_array = [1, 2, 3, 5]
         self.chosen_time = None
+        self.chosen_increment = None
 
         self.label.place(x = 40, y = 10)
         self.frame.pack()
@@ -229,8 +231,15 @@ class InitWindow():
             b = tkinter.Button(self.parent,text = f'{time}',font=("Arial",18,""), command = lambda i=i: self.choose_time(i))
             b.place(x = 50 + i*50, y = 100)
 
+        for i, increment in enumerate(self.increment_array):
+            b = tkinter.Button(self.parent,text = f'{increment}',font=("Arial",18,""), command = lambda i=i: self.choose_increment(i))
+            b.place(x = 50 + i*50, y = 150)
+
     def choose_time(self, i):
         self.chosen_time = self.time_array[i]
+
+    def choose_increment(self, i):
+        self.chosen_increment = self.increment_array[i]
 
     def destroy_win(self):
         self.parent.destroy()
@@ -256,7 +265,7 @@ class Clock():
         self.job = self.parent.after(1000, self.clock)
         self.end_game = False
         self.widgets()
-        
+
 
     def widgets(self):
 
@@ -274,7 +283,11 @@ class Clock():
             self.sec_label.place(x = 700, y = 200)
             self.min_label.place(x = 600, y = 200)
 
+    def set_increment(self, increment):
+        self.increment = increment
+
     def set_clocks(self, time):
+        self.max_time = time
         self.minutes.set("{0:02d}".format(time))
         self.total_times = int(self.minutes.get())*60 + int(self.seconds.get())
 
@@ -288,7 +301,7 @@ class Clock():
 
             if self.end_game:
                 return
-                
+
             self.job = self.parent.after(1000, self.clock)
             self.parent.update()
 
@@ -300,6 +313,13 @@ class Clock():
 
     def stop_clock(self):
         self.running = False
+        self.total_times += self.increment + 1
+        mins, secs = divmod(self.total_times, 60)
+
+        self.minutes.set("{0:02d}".format(mins))
+        self.seconds.set("{0:02d}".format(secs))
+        if not self.end_game:
+            self.parent.update()
 
     def start_clock(self):
         self.running = True
@@ -307,7 +327,7 @@ class Clock():
 
 
 class Moves():
-    
+
     def __init__(self, parent):
         self.parent = parent
         self.frame = tkinter.Frame(self.parent)
@@ -328,7 +348,7 @@ class Moves():
             #text = tkinter.Text(self.move_frame)
             #text.insert(tkinter.INSERT, f"{i}")
 
-        
+
 
 if __name__ == "__main__":
     root = tkinter.Tk()
