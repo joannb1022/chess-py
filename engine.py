@@ -15,6 +15,7 @@ class Engine:
         self.chosen_square = None
         self.target_square = None
         self.promotion_pieces = {'R': pieces.Rook, 'N': pieces.Knight, 'B': pieces.Bishop, 'Q': pieces.Queen}
+        self.play_again = True
 
         self.end = False
 
@@ -23,31 +24,44 @@ class Engine:
         self.parent.protocol("WM_DELETE_WINDOW", self.end_game)
 
 
+    def restart_game(self):
+        self.turn = 'w'
+        self.chosen_square = None
+        self.target_square = None
+        self.play_again = True
+        self.end = False
+        self.game.place_pieces()
+        self.visualiser.prev_color = 'w'
+        self.visualiser.color = 'w'
+
+
     def run(self):
-        self.start_game()
-        self.set_clocks()
-        while not self.end:
-            self.visualiser.draw()
-            if(self.game.is_checkmate(self.turn)):
-                self.visualiser.open_new_window(Checkmate, self.turn)
-                self.end_game() #na razie tam jest sam exit ale moze bedzie cos jeszcze
-                break
-            elif self.game.is_stalemate(self.turn):
-                print("DRAW")
-                break
-            self.make_move(self.turn)
-            self.chosen_square = None
-            self.clocks[self.turn].stop_clock()
-            if self.turn == 'w':
-                self.turn = 'b'
-                self.visualiser.color = 'b'
-                self.visualiser.prev_color = 'w'
-            else:
-                self.turn = 'w'
-                self.visualiser.color = 'w'
-                self.visualiser.prev_color = 'b'
-            self.clocks[self.turn].start_clock()
-        print("After end")
+        while self.play_again:
+            self.restart_game()
+            self.start_game()
+            self.set_clocks()
+            while not self.end:
+                self.visualiser.draw()
+                if(self.game.is_checkmate(self.turn)):
+                    self.visualiser.open_new_window(Checkmate, self.turn)
+                    #self.end_game() #na razie tam jest sam exit ale moze bedzie cos jeszcze
+                    break
+                elif self.game.is_stalemate(self.turn):
+                    print("DRAW")
+                    break
+                self.make_move(self.turn)
+                self.chosen_square = None
+                self.clocks[self.turn].stop_clock()
+                if self.turn == 'w':
+                    self.turn = 'b'
+                    self.visualiser.color = 'b'
+                    self.visualiser.prev_color = 'w'
+                else:
+                    self.turn = 'w'
+                    self.visualiser.color = 'w'
+                    self.visualiser.prev_color = 'b'
+                self.clocks[self.turn].start_clock()
+            print("After end")
 
     def make_move(self, color):
         #while True:
@@ -175,8 +189,9 @@ class Engine:
             self.increment_option = self.init_win.chosen_increment
 
     def set_clocks(self):
-        clock_white = self.visualiser.clock_white
-        clock_black = self.visualiser.clock_black
+        clock_white, clock_black = self.visualiser.set_clocks()
+        #clock_white = self.visualiser.clock_white
+        #clock_black = self.visualiser.clock_black
         self.clocks = {'w':clock_white, 'b': clock_black}
         self.clocks['w'].set_increment(self.increment_option)
         self.clocks['b'].set_increment(self.increment_option)
@@ -193,6 +208,7 @@ class Engine:
         self.visualiser.clock_white.end_game = True
         self.visualiser.clock_black.end_game = True
         self.parent.destroy()
+        self.play_again = False
         #self.parent.quit()
         #exit()
 

@@ -48,6 +48,10 @@ class Board:
             self.board[1][i].place_piece(pieces.Pawn('b'))
             self.board[6][i].place_piece(pieces.Pawn('w'))
 
+        for i in range(2,6):
+            for j in range(8):
+                self.board[i][j].remove_piece()
+
 
     def move_piece(self, s_pos, t_pos, real_move = False):
 

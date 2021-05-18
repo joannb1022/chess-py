@@ -36,7 +36,7 @@ class BoardVisualiser(tkinter.Frame):
 
         self.load_images()
         self.draw()
-        self.set_clocks()
+        #self.set_clocks()
 
     def start_game(self):
         self.new = tkinter.Toplevel(self.parent)
@@ -148,6 +148,7 @@ class BoardVisualiser(tkinter.Frame):
     def set_clocks(self):
         self.clock_white = Clock(self.parent, "w")
         self.clock_black = Clock(self.parent, 'b')
+        return self.clock_white, self.clock_black
 
 class PromotionWindow(tkinter.Frame):
     def __init__(self, parent, color):
@@ -217,7 +218,7 @@ class InitWindow():
 
         self.label = tkinter.Label(self.parent, text="Choose time option: ", font=("Arial",18,""))
         self.time_array = [1, 3, 5, 10]
-        self.increment_array = [1, 2, 3, 5]
+        self.increment_array = [0, 1, 2, 5]
         self.chosen_time = None
         self.chosen_increment = None
 
