@@ -29,8 +29,15 @@ class BoardVisualiser(tkinter.Frame):
 
         tkinter.Frame.__init__(self, parent)
 
-        self.canvas = tkinter.Canvas(self, width = canvas_width + 300, height = canvas_height)
+
+        self.frame = tkinter.Frame(parent)
+        self.frame.pack(side = tkinter.LEFT)
+        self.canvas = tkinter.Canvas(self.frame, width = canvas_width, height = canvas_height)
+        #self.canvas = tkinter.Canvas(self, width = canvas_width + 300, height = canvas_height)
+        self.parent.geometry(f"{canvas_width+300}x{canvas_height}")
+        #self.canvas = tkinter.Canvas(self, width = canvas_width, height = canvas_height)
         self.canvas.pack()
+        #self.canvas.place(height = canvas_height, width = canvas_width)
         self.parent.bind('<Button>', self.get_coord)
         self.parent.resizable(False, False)
 
@@ -332,8 +339,9 @@ class Moves():
     def __init__(self, parent):
         self.parent = parent
         self.frame = tkinter.Frame(self.parent)
-        self.frame.place(x=600, y=400)
-        self.canvas = tkinter.Canvas(self.frame)
+        self.frame.place(x=570, y=80)
+        #self.frame.pack()
+        self.canvas = tkinter.Canvas(self.frame, height = 100, width = 200)
         self.canvas.pack(side= tkinter.LEFT, fill = tkinter.BOTH, expand = 1)
         self.scrollbar = tkinter.Scrollbar(self.frame, orient = tkinter.VERTICAL, command = self.canvas.yview)
         self.scrollbar.pack(side=tkinter.RIGHT, fill = tkinter.Y)
@@ -357,6 +365,10 @@ if __name__ == "__main__":
     real_board = board.Board()
     b = BoardVisualiser(root, real_board)
     b.pack()
-
-    #b.draw()
     root.mainloop()
+
+    # root = tkinter.Tk()
+    # moves = Moves(root)
+    # #moves.pack()
+    # root.mainloop()
+
