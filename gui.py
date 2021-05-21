@@ -29,10 +29,17 @@ class BoardVisualiser(tkinter.Frame):
 
         tkinter.Frame.__init__(self, parent)
 
-        self.canvas = tkinter.Canvas(self, width = canvas_width + 300, height = canvas_height)
+
+        self.frame = tkinter.Frame(parent)
+        self.frame.pack(side = tkinter.LEFT)
+        self.canvas = tkinter.Canvas(self.frame, width = canvas_width, height = canvas_height)
+        #self.canvas = tkinter.Canvas(self, width = canvas_width + 300, height = canvas_height)
+        self.parent.geometry(f"{canvas_width+300}x{canvas_height}")
+        #self.canvas = tkinter.Canvas(self, width = canvas_width, height = canvas_height)
         self.canvas.pack()
+        #self.canvas.place(height = canvas_height, width = canvas_width)
         self.parent.bind('<Button>', self.get_coord)
-        self.parent.resizable(False, False)
+        #self.parent.resizable(False, False)
 
         self.load_images()
         self.draw()
@@ -341,9 +348,10 @@ class Moves():
 
     def __init__(self, parent):
         self.parent = parent
+        self.len = 0
         self.frame = tkinter.Frame(self.parent)
-        self.frame.place(x=600, y=400)
-        self.canvas = tkinter.Canvas(self.frame)
+        self.frame.place(x=570, y=80)
+        self.canvas = tkinter.Canvas(self.frame, height = 100, width = 200, bg = 'black')
         self.canvas.pack(side= tkinter.LEFT, fill = tkinter.BOTH, expand = 1)
         self.scrollbar = tkinter.Scrollbar(self.frame, orient = tkinter.VERTICAL, command = self.canvas.yview)
         self.scrollbar.pack(side=tkinter.RIGHT, fill = tkinter.Y)
@@ -352,13 +360,19 @@ class Moves():
         self.canvas.bind('<Configure>', lambda x: self.canvas.configure(scrollregion = self.canvas.bbox('all')))
 
         self.move_frame = tkinter.Frame(self.canvas)
-        self.canvas.create_window((50, 50), window = self.move_frame)
+        self.canvas.create_window((100, 0), window = self.move_frame)
 
-        for i in range(100):
-            tkinter.Button(self.move_frame, text=f'{i} button').grid(row = i)
-            #text = tkinter.Text(self.move_frame)
-            #text.insert(tkinter.INSERT, f"{i}")
 
+    def add_move(self, history, color):
+        col = 0 if color == 'w' else 1
+        
+        print(f"len: {len(history)}")        
+        #tkinter.Label(self.move_frame, width = 10, text = f'{self.len}').grid(row = self.len//2, column = col)
+
+        tkinter.Label(self.move_frame, width = 10, text = history[-1].to_string()).grid(row = self.len//2, column = col)
+
+        self.move_frame.bind("<Configure>", lambda x: self.canvas.configure(scrollregion = self.canvas.bbox('all')))
+        self.len+=1
 
 
 if __name__ == "__main__":
@@ -367,6 +381,10 @@ if __name__ == "__main__":
     real_board = board.Board()
     b = BoardVisualiser(root, real_board)
     b.pack()
-
-    #b.draw()
     root.mainloop()
+
+    # root = tkinter.Tk()
+    # moves = Moves(root)
+    # #moves.pack()
+    # root.mainloop()
+
