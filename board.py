@@ -201,10 +201,10 @@ class Board:
             else:
                 multip = -1
 
-
-            if self.board[multip+pos[0]][pos[1]].is_empty() and not self.discovers_check((multip, 0), pos):
-                res.append((pos[0]+multip,pos[1]))
-                if piece.can_move_two and pos[0]%7 == 6 or pos[0]%7 == 1 and self.board[2*multip+pos[0]][pos[1]].is_empty() and not self.discovers_check((multip*2, 0), pos):
+            if self.board[multip+pos[0]][pos[1]].is_empty():
+                if not self.discovers_check((multip, 0), pos):
+                    res.append((pos[0]+multip,pos[1]))
+                if piece.can_move_two and (pos[0]%7 == 6 or pos[0]%7 == 1) and self.board[2*multip+pos[0]][pos[1]].is_empty() and not self.discovers_check((multip*2, 0), pos):
                     res.append((pos[0]+multip*2, pos[1]))
 
 
@@ -473,11 +473,7 @@ class Board:
         self.move_piece(pos, (pos[0]+dir[0], pos[1]+dir[1]))
         is_check = self.is_in_check(color)
 
-        # print(self.white_king)
-
         self.reverse_move()
-
-        # print(self.white_king)
 
         return is_check
 
@@ -661,6 +657,7 @@ class Board:
 
         self.move_piece(hist.end_pos, hist.start_pos)
         self.board[hist.end_pos[0]][hist.end_pos[1]].place_piece(hist.taken_piece)
+        self.move_history.pop()
         self.move_history.pop()
 
 

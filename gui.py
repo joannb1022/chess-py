@@ -24,7 +24,7 @@ class BoardVisualiser(tkinter.Frame):
         self.new_window = None
         self.wait_state = tkinter.IntVar()
 
-
+        self.scores = Score(self.parent)
         self.move_history = Moves(self.parent)
 
         tkinter.Frame.__init__(self, parent)
@@ -343,7 +343,6 @@ class Clock():
         # self.closck()
 
 
-
 class Moves():
 
     def __init__(self, parent):
@@ -366,13 +365,28 @@ class Moves():
     def add_move(self, history, color):
         col = 0 if color == 'w' else 1
         
-        print(f"len: {len(history)}")        
-        #tkinter.Label(self.move_frame, width = 10, text = f'{self.len}').grid(row = self.len//2, column = col)
-
         tkinter.Label(self.move_frame, width = 10, text = history[-1].to_string()).grid(row = self.len//2, column = col)
 
         self.move_frame.bind("<Configure>", lambda x: self.canvas.configure(scrollregion = self.canvas.bbox('all')))
         self.len+=1
+
+
+class Score:
+    def __init__(self, parent):
+        self.parent = parent
+        self.frame = tkinter.Frame(self.parent)
+        self.frame.place(x = 555, y = 410)
+        self.score_label = tkinter.Label(self.frame, width = 5, font=("Arial", 18), text = 'Score')
+        self.score_label.grid(row = 0, column = 1)
+        self.scores = [tkinter.Label(self.frame, width = 6, font=("Arial",16), text = 'Player 1\n0'), tkinter.Label(self.frame, width = 6, font=("Arial",16), text = 'Player 2\n0')]
+        self.scores[0].grid(row = 1, column = 0)
+        self.scores[1].grid(row = 1, column = 2)
+
+
+    def update_scores(self, scores):
+        self.scores[0].config(text = 'Player 1\n'+str(scores[0]))
+        self.scores[1].config(text = 'Player 2\n'+str(scores[1]))
+
 
 
 if __name__ == "__main__":
@@ -382,9 +396,4 @@ if __name__ == "__main__":
     b = BoardVisualiser(root, real_board)
     b.pack()
     root.mainloop()
-
-    # root = tkinter.Tk()
-    # moves = Moves(root)
-    # #moves.pack()
-    # root.mainloop()
 

@@ -17,6 +17,9 @@ class Engine:
         self.promotion_pieces = {'R': pieces.Rook, 'N': pieces.Knight, 'B': pieces.Bishop, 'Q': pieces.Queen}
         self.play_again = True
 
+        self.players = {'w' : 0, 'b' : 1}
+        self.scores = {0 : 0, 1 : 0}
+
         self.end = False
 
         self.visualiser.pack()
@@ -37,25 +40,27 @@ class Engine:
 
     def run(self):
         while self.play_again:
-            self.restart_game()
             self.start_game()
             self.set_clocks()
+        
             while not self.end:
                 self.visualiser.draw()
                 if(self.game.is_checkmate(self.turn)):
                     self.reset_clocks()
                     self.visualiser.open_new_window(ClosingWindow, color = self.turn, text = 'Checkmate')
                     #self.end_game() #na razie tam jest sam exit ale moze bedzie cos jeszcze
+                    temp_col = 'w' if self.turn == 'b' else 'b'
+                    self.scores[self.players[temp_col]] +=1
                     break
                 elif self.game.is_stalemate(self.turn):
                     self.reset_clocks()
                     self.visualiser.open_new_window(ClosingWindow, color = self.turn, text = 'Draw')
                     # print("DRAW")
+                    self.scores[0], self.scores[1] = self.scores[0]+0.5, self.scores[1]+0.5
                     break
                 self.make_move(self.turn)
                 self.chosen_square = None
                 self.clocks[self.turn].stop_clock()
-                print(self.game.move_history)
                 self.visualiser.move_history.add_move(self.game.move_history, self.turn)
                 if self.turn == 'w':
                     self.turn = 'b'
@@ -67,6 +72,9 @@ class Engine:
                     self.visualiser.prev_color = 'b'
                 self.clocks[self.turn].start_clock()
             print("After end")
+            self.players['w'], self.players['b'] = self.players['b'], self.players['w']
+            self.visualiser.scores.update_scores(self.scores)
+
 
     def make_move(self, color):
         #while True:
@@ -186,6 +194,7 @@ class Engine:
 
 
     def start_game(self):
+        self.restart_game()
         self.init_win = self.visualiser.start_game()
         self.time_option = self.init_win.chosen_time
         if not self.init_win.chosen_increment:
