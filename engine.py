@@ -52,6 +52,8 @@ class Engine:
                 self.make_move(self.turn)
                 self.chosen_square = None
                 self.clocks[self.turn].stop_clock()
+                print(self.game.move_history)
+                self.visualiser.move_history.add_move(self.game.move_history, self.turn)
                 if self.turn == 'w':
                     self.turn = 'b'
                     self.visualiser.color = 'b'
