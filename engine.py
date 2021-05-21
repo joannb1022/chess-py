@@ -4,7 +4,7 @@ import tkinter
 import pieces
 from time import sleep
 from gui import PromotionWindow, InitWindow
-from gui import Checkmate, Clock
+from gui import ClosingWindow, Clock
 
 class Engine:
     def __init__(self, parent):
@@ -43,11 +43,14 @@ class Engine:
             while not self.end:
                 self.visualiser.draw()
                 if(self.game.is_checkmate(self.turn)):
-                    self.visualiser.open_new_window(Checkmate, self.turn)
+                    self.reset_clocks()
+                    self.visualiser.open_new_window(ClosingWindow, color = self.turn, text = 'Checkmate')
                     #self.end_game() #na razie tam jest sam exit ale moze bedzie cos jeszcze
                     break
                 elif self.game.is_stalemate(self.turn):
-                    print("DRAW")
+                    self.reset_clocks()
+                    self.visualiser.open_new_window(ClosingWindow, color = self.turn, text = 'Draw')
+                    # print("DRAW")
                     break
                 self.make_move(self.turn)
                 self.chosen_square = None
@@ -198,6 +201,13 @@ class Engine:
         self.clocks['w'].set_clocks(self.time_option)
         self.clocks['b'].set_clocks(self.time_option)
         self.clocks['w'].start_clock()
+
+    def reset_clocks(self):
+        self.clocks['w'].stop_clock()
+        self.clocks['w'].reset_clock()
+        self.clocks['b'].stop_clock()
+        self.clocks['b'].reset_clock()
+
 
 
     def end_game(self):

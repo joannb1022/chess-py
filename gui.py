@@ -140,9 +140,9 @@ class BoardVisualiser(tkinter.Frame):
     def set_wait_state(self):
         self.wait_state = tkinter.IntVar()
 
-    def open_new_window(self, _class, color = None):
+    def open_new_window(self, _class, color = None, text = None):
         self.new = tkinter.Toplevel(self.parent)
-        new_window = _class(self.new, color)
+        new_window = _class(self.new, color, text)
         return new_window
 
     def set_clocks(self):
@@ -151,7 +151,7 @@ class BoardVisualiser(tkinter.Frame):
         return self.clock_white, self.clock_black
 
 class PromotionWindow(tkinter.Frame):
-    def __init__(self, parent, color):
+    def __init__(self, parent, color, text):
         # tkinter.Frame.__init__(self, parent)
 
         self.parent = parent
@@ -246,17 +246,21 @@ class InitWindow():
         self.parent.destroy()
 
 
-class Checkmate():
-    def __init__(self, parent, color):
+class ClosingWindow():
+    def __init__(self, parent, color, text):
+        print(text)
 
         self.parent = parent
         self.parent.geometry("450x300")
 
         frame = tkinter.Frame(self.parent)
-        label = tkinter.Label(self.parent, text=f"CHECKMATE, {color} LOSES").place(x = 200, y = 100)
+        label = tkinter.Label(self.parent, text=f"{text}, {color} LOSES").place(x = 200, y = 100)
 
+        # button = tkinter.Button(self.parent, height = 20, width = 20, text = "Play again", command = self.play_again())
         self.parent.wait_window(self.parent)
 
+    # def play_again(self):
+    #     # ???
 
 class Clock():
     def __init__(self, parent, color):
@@ -325,6 +329,12 @@ class Clock():
     def start_clock(self):
         self.running = True
         self.clock()
+
+    def reset_clock(self):
+        self.minutes.set("00")
+        self.seconds.set("00")
+        # self.closck()
+
 
 
 class Moves():
