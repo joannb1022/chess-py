@@ -276,6 +276,7 @@ class Clock():
         self.color = color
         self.job = self.parent.after(1000, self.clock)
         self.end_game = False
+        self.first_move = True
         self.widgets()
 
 
@@ -325,8 +326,10 @@ class Clock():
 
     def stop_clock(self):
         self.running = False
-        self.total_times += self.increment + 1
+        if not self.first_move:
+            self.total_times += self.increment + 1
         mins, secs = divmod(self.total_times, 60)
+        self.first_move = False
 
         self.minutes.set("{0:02d}".format(mins))
         self.seconds.set("{0:02d}".format(secs))
@@ -364,7 +367,7 @@ class Moves():
 
     def add_move(self, history, color):
         col = 0 if color == 'w' else 1
-        
+
         tkinter.Label(self.move_frame, width = 10, text = history[-1].to_string()).grid(row = self.len//2, column = col)
 
         self.move_frame.bind("<Configure>", lambda x: self.canvas.configure(scrollregion = self.canvas.bbox('all')))
@@ -396,4 +399,3 @@ if __name__ == "__main__":
     b = BoardVisualiser(root, real_board)
     b.pack()
     root.mainloop()
-

@@ -42,7 +42,6 @@ class Engine:
         while self.play_again:
             self.start_game()
             self.set_clocks()
-        
             while not self.end:
                 self.visualiser.draw()
                 if(self.game.is_checkmate(self.turn)):
@@ -71,6 +70,7 @@ class Engine:
                     self.visualiser.color = 'w'
                     self.visualiser.prev_color = 'b'
                 self.clocks[self.turn].start_clock()
+
             print("After end")
             self.players['w'], self.players['b'] = self.players['b'], self.players['w']
             self.visualiser.scores.update_scores(self.scores)
@@ -204,22 +204,22 @@ class Engine:
 
     def set_clocks(self):
         clock_white, clock_black = self.visualiser.set_clocks()
-        #clock_white = self.visualiser.clock_white
-        #clock_black = self.visualiser.clock_black
+        # self.visualiser.set_clocks()
+        # clock_white = self.visualiser.clock_white
+        # clock_black = self.visualiser.clock_black
         self.clocks = {'w':clock_white, 'b': clock_black}
         self.clocks['w'].set_increment(self.increment_option)
         self.clocks['b'].set_increment(self.increment_option)
         self.clocks['w'].set_clocks(self.time_option)
         self.clocks['b'].set_clocks(self.time_option)
-        self.clocks['w'].start_clock()
+        self.clocks['b'].first_move = False
+        # self.clocks['w'].start_clock()
 
     def reset_clocks(self):
         self.clocks['w'].stop_clock()
         self.clocks['w'].reset_clock()
         self.clocks['b'].stop_clock()
         self.clocks['b'].reset_clock()
-
-
 
     def end_game(self):
         self.end = True
