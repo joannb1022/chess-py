@@ -4,6 +4,7 @@ from os import listdir
 import os
 from time import sleep
 from time import strftime
+import pieces
 
 
 class BoardVisualiser(tkinter.Frame):
@@ -20,6 +21,7 @@ class BoardVisualiser(tkinter.Frame):
         self.current_coordinates = (None, None)
         self.color = 'w'
         self.prev_color = 'w'
+        self.show_game = [False]
 
         self.new_window = None
         self.wait_state = tkinter.IntVar()
@@ -33,17 +35,14 @@ class BoardVisualiser(tkinter.Frame):
         self.frame = tkinter.Frame(parent)
         self.frame.pack(side = tkinter.LEFT)
         self.canvas = tkinter.Canvas(self.frame, width = canvas_width, height = canvas_height)
-        #self.canvas = tkinter.Canvas(self, width = canvas_width + 300, height = canvas_height)
         self.parent.geometry(f"{canvas_width+300}x{canvas_height}")
-        #self.canvas = tkinter.Canvas(self, width = canvas_width, height = canvas_height)
         self.canvas.pack()
-        #self.canvas.place(height = canvas_height, width = canvas_width)
+        
         self.parent.bind('<Button>', self.get_coord)
-        #self.parent.resizable(False, False)
+        self.parent.resizable(False, False)
 
         self.load_images()
         self.draw()
-        #self.set_clocks()
 
     def start_game(self):
         self.new = tkinter.Toplevel(self.parent)
@@ -52,20 +51,6 @@ class BoardVisualiser(tkinter.Frame):
         return self.new_window
 
     def draw(self):
-        # print(len(self.squares_to_change))
-
-        # if self.color != self.prev_color:
-        #     self.squares_to_change = []
-        #     for i in range(8):
-        #         for j in range(8):
-        #             self.squares_to_change.append((i,j))
-
-        #self.squares_to_change = []
-        #for i in range(8):
-        #    for j in range(8):
-        #        self.squares_to_change.append((i,j))
-
-
 
         self.squares_to_change = []
         for i in range(8):
@@ -147,18 +132,80 @@ class BoardVisualiser(tkinter.Frame):
     def set_wait_state(self):
         self.wait_state = tkinter.IntVar()
 
-    def open_new_window(self, _class, color = None, text = None):
+    def open_new_window(self, _class, review = None, color = None, text = None):
         self.new = tkinter.Toplevel(self.parent)
-        new_window = _class(self.new, color, text)
+        new_window = _class(self.new, review, color, text)
         return new_window
 
-    def set_clocks(self):
-        self.clock_white = Clock(self.parent, "w")
-        self.clock_black = Clock(self.parent, 'b')
+    def set_clocks(self, players):
+        self.clock_white = Clock(self.parent, 'w', players['w'])
+        self.clock_black = Clock(self.parent, 'b', players['b'])
         return self.clock_white, self.clock_black
 
+
+    def review_game(self, history):
+        past_moves = []
+        future_moves = []
+        self.color = 'w'
+
+        for i in range(len(history)-1, -1, -1):
+            future_moves.append(history[i])
+
+        def on_key_press(event):
+            nonlocal past_moves, future_moves
+
+            if event.keysym == 'Left' and len(past_moves) > 0:
+                move = past_moves.pop()
+                #self.board.move_piece(move.end_pos, move.start_pos, True)
+                piece = self.board.board[move.end_pos[0]][move.end_pos[1]].remove_piece()
+                self.board.board[move.start_pos[0]][move.start_pos[1]].place_piece(piece)
+                
+                if move.promotion:
+                    self.board.board[move.start_pos[0]][move.start_pos[1]].place_piece(pieces.Pawn(move.piece.color))
+                if move.castle:
+                    self.board.move_piece(move.castle[1], move.castle[0], True)
+                if move.en_passant:
+                    self.board.board[move.start_pos[0]][move.end_pos[1]].place_piece(move.taken_piece)
+                else:
+                    self.board.board[move.end_pos[0]][move.end_pos[1]].place_piece(move.taken_piece)
+
+                future_moves.append(move)
+                self.wait_state.set(1)
+            elif event.keysym == 'Right' and len(future_moves) > 0:
+                move = future_moves.pop()
+                
+                self.board.move_piece(move.start_pos, move.end_pos, True)
+                
+                if move.promotion:
+                    self.board.board[move.end_pos[0]][move.end_pos[1]].place_piece(move.promotion_piece)
+                
+                past_moves.append(move)
+                self.wait_state.set(1)
+
+        self.board.place_pieces()
+        self.parent.bind('<KeyPress>', on_key_press)
+        play_button = tkinter.Button(self.parent, text = "Play again", font=("Arial", 14), command = lambda: self.wait_state.set(2))
+        play_button.place(x = 615, y = 300)
+
+        self.draw()
+
+        while(True):
+            self.parent.wait_variable(self.wait_state)
+            if self.wait_state.get() == 1:
+                
+                self.draw()
+            elif self.wait_state.get() == 2:
+                print('mouse')
+                break
+
+        play_button.destroy()
+        self.parent.unbind('<KeyPress>')
+
+        
+
+
 class PromotionWindow(tkinter.Frame):
-    def __init__(self, parent, color, text):
+    def __init__(self, parent, color, text, review):
         # tkinter.Frame.__init__(self, parent)
 
         self.parent = parent
@@ -254,7 +301,7 @@ class InitWindow():
 
 
 class ClosingWindow():
-    def __init__(self, parent, color, text):
+    def __init__(self, parent, review, color, text):
         print(text)
 
         self.parent = parent
@@ -263,20 +310,29 @@ class ClosingWindow():
         frame = tkinter.Frame(self.parent)
         label = tkinter.Label(self.parent, text=f"{text}, {color} LOSES").place(x = 200, y = 100)
 
-        # button = tkinter.Button(self.parent, height = 20, width = 20, text = "Play again", command = self.play_again())
+        play_button = tkinter.Button(self.parent, height = 20, width = 20, text = "Play again", command = lambda: self.parent.destroy())
+        review_button = tkinter.Button(self.parent, height = 20, width = 20, text = "Review game", command = lambda rev = review: self.review_game(rev))
+
+        play_button.place(x=  40, y = 20)
+        review_button.place(x = 20, y = 20)
+
         self.parent.wait_window(self.parent)
 
-    # def play_again(self):
-    #     # ???
+    def review_game(self, review):
+        review[0] = True
+        self.parent.destroy()
+
+
 
 class Clock():
-    def __init__(self, parent, color):
+    def __init__(self, parent, color, player):
         self.parent = parent
         self.running = False
         self.color = color
         self.job = self.parent.after(1000, self.clock)
         self.end_game = False
         self.first_move = True
+        self.player = player
         self.widgets()
 
 
@@ -287,12 +343,16 @@ class Clock():
         self.minutes.set("00")
         self.seconds.set("00")
 
-        self.min_label= tkinter.Label(self.parent, width=3, font=("Arial",18,""), textvariable = self.minutes)
+        self.player_name = tkinter.Label(self.parent, width = 20, font=("Arial",18,""), text = f"Player {self.player+1}")
+        self.min_label = tkinter.Label(self.parent, width=3, font=("Arial",18,""), textvariable = self.minutes)
         self.sec_label = tkinter.Label(self.parent, width=3, font=("Arial",18,""), textvariable = self.seconds)
+
         if self.color == 'w':
+            self.player_name.place(x = 500, y = 20)
             self.sec_label.place(x = 700, y = 20)
             self.min_label.place(x = 600,y = 20)
         if self.color == 'b':
+            self.player_name.place(x = 500, y = 200)
             self.sec_label.place(x = 700, y = 200)
             self.min_label.place(x = 600, y = 200)
 
@@ -343,7 +403,7 @@ class Clock():
     def reset_clock(self):
         self.minutes.set("00")
         self.seconds.set("00")
-        # self.closck()
+
 
 
 class Moves():

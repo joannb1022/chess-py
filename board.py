@@ -118,8 +118,9 @@ class Board:
             #     curr_move.en_passant = True
 
             elif t_square.piece is None and abs(t_pos[1]-s_pos[1]) == 1 and real_move:
-                self.board[s_pos[0]][t_pos[1]].remove_piece()
+                curr_move.taken_piece = self.board[s_pos[0]][t_pos[1]].remove_piece()
                 curr_move.en_passant = True
+                
 
             if t_pos[0] == 0 or t_pos[0] == 7:
                 curr_move.promotion = True

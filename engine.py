@@ -36,6 +36,7 @@ class Engine:
         self.game.place_pieces()
         self.visualiser.prev_color = 'w'
         self.visualiser.color = 'w'
+        self.game.move_history = []
 
 
     def run(self):
@@ -46,14 +47,14 @@ class Engine:
                 self.visualiser.draw()
                 if(self.game.is_checkmate(self.turn)):
                     self.reset_clocks()
-                    self.visualiser.open_new_window(ClosingWindow, color = self.turn, text = 'Checkmate')
+                    self.visualiser.open_new_window(ClosingWindow, review = self.visualiser.show_game, color = self.turn, text = 'Checkmate')
                     #self.end_game() #na razie tam jest sam exit ale moze bedzie cos jeszcze
                     temp_col = 'w' if self.turn == 'b' else 'b'
                     self.scores[self.players[temp_col]] +=1
                     break
                 elif self.game.is_stalemate(self.turn):
                     self.reset_clocks()
-                    self.visualiser.open_new_window(ClosingWindow, color = self.turn, text = 'Draw')
+                    self.visualiser.open_new_window(ClosingWindow, review = self.visualiser.show_game, color = self.turn, text = 'Draw')
                     # print("DRAW")
                     self.scores[0], self.scores[1] = self.scores[0]+0.5, self.scores[1]+0.5
                     break
@@ -70,6 +71,12 @@ class Engine:
                     self.visualiser.color = 'w'
                     self.visualiser.prev_color = 'b'
                 self.clocks[self.turn].start_clock()
+            
+            if self.visualiser.show_game:
+                self.visualiser.review_game(self.game.move_history)
+
+
+            print(self.visualiser.show_game)
 
             print("After end")
             self.players['w'], self.players['b'] = self.players['b'], self.players['w']
@@ -185,6 +192,9 @@ class Engine:
             piece = self.promotion_win.chosen_piece
             promotion_piece = self.promotion_pieces[piece[1]]
             self.game.board[last_move.end_pos[0]][last_move.end_pos[1]].place_piece(promotion_piece(piece[0]))
+            
+            self.game.move_history[-1].promotion_piece = promotion_piece(piece[0])
+
             self.visualiser.set_squares_to_change([last_move.end_pos])
             self.visualiser.draw()
 
@@ -203,17 +213,15 @@ class Engine:
             self.increment_option = self.init_win.chosen_increment
 
     def set_clocks(self):
-        clock_white, clock_black = self.visualiser.set_clocks()
-        # self.visualiser.set_clocks()
-        # clock_white = self.visualiser.clock_white
-        # clock_black = self.visualiser.clock_black
+        clock_white, clock_black = self.visualiser.set_clocks(self.players)
+        
         self.clocks = {'w':clock_white, 'b': clock_black}
         self.clocks['w'].set_increment(self.increment_option)
         self.clocks['b'].set_increment(self.increment_option)
         self.clocks['w'].set_clocks(self.time_option)
         self.clocks['b'].set_clocks(self.time_option)
         self.clocks['b'].first_move = False
-        # self.clocks['w'].start_clock()
+        #self.visualiser.switch_players()
 
     def reset_clocks(self):
         self.clocks['w'].stop_clock()
