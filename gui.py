@@ -413,7 +413,8 @@ class Moves():
         self.len = 0
         self.frame = tkinter.Frame(self.parent)
         self.frame.place(x=570, y=80)
-        self.canvas = tkinter.Canvas(self.frame, height = 100, width = 200, bg = 'black')
+        self.labels = []
+        self.canvas = tkinter.Canvas(self.frame, height = 100, width = 200, bg = '#393d4f')
         self.canvas.pack(side= tkinter.LEFT, fill = tkinter.BOTH, expand = 1)
         self.scrollbar = tkinter.Scrollbar(self.frame, orient = tkinter.VERTICAL, command = self.canvas.yview)
         self.scrollbar.pack(side=tkinter.RIGHT, fill = tkinter.Y)
@@ -421,17 +422,31 @@ class Moves():
         self.canvas.configure(yscrollcommand = self.scrollbar.set)
         self.canvas.bind('<Configure>', lambda x: self.canvas.configure(scrollregion = self.canvas.bbox('all')))
 
-        self.move_frame = tkinter.Frame(self.canvas)
+        self.move_frame = tkinter.Frame(self.canvas, bg = '#393d4f')
         self.canvas.create_window((100, 0), window = self.move_frame)
 
 
     def add_move(self, history, color):
         col = 0 if color == 'w' else 1
 
-        tkinter.Label(self.move_frame, width = 10, text = history[-1].to_string()).grid(row = self.len//2, column = col)
+        if self.len%2==0:
+            #self.labels.append(tkinter.Label(self.move_frame, width = 10, text = f'{self.len//2+1}. {history[-1].to_string()}', bg = '#393d4f', fg = 'white'))
+            self.labels.append(tkinter.Label(self.move_frame, width = 10, text = f'{self.len//2+1}. {history[-1].to_string()}', bg = '#393d4f', fg = 'white'))
+            self.labels.append(tkinter.Label(self.move_frame, width = 10, text = '', bg = '#393d4f', fg = 'white'))
+            self.labels[-2].grid(row = self.len//2, column = 0)
+            self.labels[-1].grid(row = self.len//2, column = 1)
+        else:
+            self.labels.append(tkinter.Label(self.move_frame, width = 10, text = history[-1].to_string(), bg = '#393d4f', fg = 'white'))
+            self.labels[-1].grid(row = self.len//2, column = col)   
 
         self.move_frame.bind("<Configure>", lambda x: self.canvas.configure(scrollregion = self.canvas.bbox('all')))
         self.len+=1
+
+    def clean_history(self):
+        for el in self.labels:
+            el.destroy()
+        self.labels = []
+        self.len = 0
 
 
 class Score:

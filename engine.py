@@ -37,6 +37,7 @@ class Engine:
         self.visualiser.prev_color = 'w'
         self.visualiser.color = 'w'
         self.game.move_history = []
+        self.visualiser.move_history.clean_history()
 
 
     def run(self):
