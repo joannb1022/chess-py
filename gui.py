@@ -37,7 +37,7 @@ class BoardVisualiser(tkinter.Frame):
         self.canvas = tkinter.Canvas(self.frame, width = canvas_width, height = canvas_height)
         self.parent.geometry(f"{canvas_width+300}x{canvas_height}")
         self.canvas.pack()
-        
+
         self.parent.bind('<Button>', self.get_coord)
         self.parent.resizable(False, False)
 
@@ -159,7 +159,7 @@ class BoardVisualiser(tkinter.Frame):
                 #self.board.move_piece(move.end_pos, move.start_pos, True)
                 piece = self.board.board[move.end_pos[0]][move.end_pos[1]].remove_piece()
                 self.board.board[move.start_pos[0]][move.start_pos[1]].place_piece(piece)
-                
+
                 if move.promotion:
                     self.board.board[move.start_pos[0]][move.start_pos[1]].place_piece(pieces.Pawn(move.piece.color))
                 if move.castle:
@@ -173,12 +173,12 @@ class BoardVisualiser(tkinter.Frame):
                 self.wait_state.set(1)
             elif event.keysym == 'Right' and len(future_moves) > 0:
                 move = future_moves.pop()
-                
+
                 self.board.move_piece(move.start_pos, move.end_pos, True)
-                
+
                 if move.promotion:
                     self.board.board[move.end_pos[0]][move.end_pos[1]].place_piece(move.promotion_piece)
-                
+
                 past_moves.append(move)
                 self.wait_state.set(1)
 
@@ -192,7 +192,7 @@ class BoardVisualiser(tkinter.Frame):
         while(True):
             self.parent.wait_variable(self.wait_state)
             if self.wait_state.get() == 1:
-                
+
                 self.draw()
             elif self.wait_state.get() == 2:
                 print('mouse')
@@ -201,7 +201,7 @@ class BoardVisualiser(tkinter.Frame):
         play_button.destroy()
         self.parent.unbind('<KeyPress>')
 
-        
+
 
 
 class PromotionWindow(tkinter.Frame):
@@ -215,7 +215,6 @@ class PromotionWindow(tkinter.Frame):
         self.images = {}
         self.pieces = [f'{color}R', f'{color}N', f'{color}B', f'{color}Q']
         self.chosen_piece = None
-
 
         self.widgets()
 
@@ -233,7 +232,7 @@ class PromotionWindow(tkinter.Frame):
 
 
     def load_buttons(self):
-        self.buttons = [] #nie wiem czy dawac to self, bo bez tego tez zadziala chyba to nie jest nam potrzebne potem
+        self.buttons = []
         for i, piece in enumerate(self.pieces):
             photo = self.images[piece]
             b = tkinter.Button(self.parent, height = self.size, width = self.size, image = photo, command = lambda i=i: self.button_press(i))
@@ -302,26 +301,33 @@ class InitWindow():
 
 class ClosingWindow():
     def __init__(self, parent, review, color, text):
-        print(text)
-
         self.parent = parent
         self.parent.geometry("450x300")
 
+
         frame = tkinter.Frame(self.parent)
-        label = tkinter.Label(self.parent, text=f"{text}, {color} LOSES").place(x = 200, y = 100)
+        if color == 'w':
+            win_color = 'black'
+        else:
+            win_color = 'white'
 
-        play_button = tkinter.Button(self.parent, height = 20, width = 20, text = "Play again", command = lambda: self.parent.destroy())
-        review_button = tkinter.Button(self.parent, height = 20, width = 20, text = "Review game", command = lambda rev = review: self.review_game(rev))
+        if text == 'Checkmate':
+            label = tkinter.Label(self.parent, font=("Arial",14), text=f"{text}, {win_color} has won").place(x = 120, y = 100)
+        elif text == 'Draw':
+            label = tkinter.Label(self.parent, font=("Arial",14), text=f"{text}").place(x = 150, y = 100)
 
-        play_button.place(x=  40, y = 20)
-        review_button.place(x = 20, y = 20)
+
+        play_button = tkinter.Button(self.parent, font=("Arial",14), text = "Play again", command = lambda: self.parent.destroy())
+        review_button = tkinter.Button(self.parent, font=("Arial",14), text = "Review game", command = lambda rev = review: self.review_game(rev))
+
+        play_button.place(x =  90, y = 200)
+        review_button.place(x = 210, y = 200)
 
         self.parent.wait_window(self.parent)
 
     def review_game(self, review):
         review[0] = True
         self.parent.destroy()
-
 
 
 class Clock():
