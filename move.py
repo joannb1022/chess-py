@@ -14,7 +14,7 @@ class Move:
 
     def to_string(self):
         if self.castle:
-            if abs(self.castle[1][1]-self.castle[0][1] == 2):
+            if abs(self.castle[1][1]-self.castle[0][1]) == 2:
                 return 'O-O'
             else:
                 return 'O-O-O'

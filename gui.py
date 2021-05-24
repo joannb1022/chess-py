@@ -185,7 +185,7 @@ class BoardVisualiser(tkinter.Frame):
 
         self.board.place_pieces()
         self.parent.bind('<KeyPress>', on_key_press)
-        play_button = tkinter.Button(self.parent, text = "Play again", font=("Arial", 14), command = lambda: self.wait_state.set(2))
+        play_button = tkinter.Button(self.parent, text = "Play again", font=("Arial", 14), command = lambda: self.wait_state.set(2), background='#345', activebackground='#345', fg = 'white')
         play_button.place(x = 615, y = 300)
 
         self.draw()

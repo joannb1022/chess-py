@@ -252,6 +252,7 @@ class Engine:
             self.visualiser.open_new_window(ClosingWindow, review = self.visualiser.show_game, color = color, text = 'Time')
             return True
         return False
+        
     def end_game(self):
         self.end = True
         self.visualiser.wait_state.set(1)
@@ -261,19 +262,13 @@ class Engine:
         self.visualiser.clock_black.end_game = True
         self.parent.destroy()
         self.play_again = False
-        #self.parent.quit()
-        #exit()
+        
 
 if __name__ == "__main__":
     root = tkinter.Tk()
     root.title("Chess")
-    # real_board = board.Board()
-    # b = BoardVisualiser(root, real_board)
-    # b.pack()
-
+    
     e = Engine(root)
     e.run()
-
-    #b.draw()
 
     root.mainloop()
