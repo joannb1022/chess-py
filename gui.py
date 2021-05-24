@@ -26,8 +26,7 @@ class BoardVisualiser(tkinter.Frame):
         self.new_window = None
         self.wait_state = tkinter.IntVar()
 
-        self.scores = Score(self.parent)
-        self.move_history = Moves(self.parent)
+      
 
         tkinter.Frame.__init__(self, parent)
 
@@ -35,8 +34,13 @@ class BoardVisualiser(tkinter.Frame):
         self.frame = tkinter.Frame(parent)
         self.frame.pack(side = tkinter.LEFT)
         self.canvas = tkinter.Canvas(self.frame, width = canvas_width, height = canvas_height)
+        self.background = tkinter.Canvas(self.parent, width = 300, height = canvas_height, bg = '#212121')
         self.parent.geometry(f"{canvas_width+300}x{canvas_height}")
         self.canvas.pack()
+        self.background.place(x = canvas_width, y = 0)
+
+        self.scores = Score(self.parent)
+        self.move_history = Moves(self.parent)
 
         self.parent.bind('<Button>', self.get_coord)
         self.parent.resizable(False, False)
@@ -57,9 +61,7 @@ class BoardVisualiser(tkinter.Frame):
             for j in range(8):
                 self.squares_to_change.append((i,j))
 
-        #print(self.canvas.find_all())
         self.canvas.delete("all")
-        #sleep(0.5)
 
         for el in self.squares_to_change:
             if (el[0]+el[1]) % 2 != 0:
@@ -83,7 +85,6 @@ class BoardVisualiser(tkinter.Frame):
                 else:
                     self.canvas.create_image((self.size*(7-el[1]+0.5), self.size*(7-el[0]+0.5)), image = piece_image, tag = f'{7-el[0]}{7-el[1]}')
 
-        print("Squarest to highlight", self.squares_to_highlight)
         for el in self.squares_to_highlight:
             if self.board.get_piece(el) != (None, None):
                 if self.color == 'w':
@@ -121,7 +122,7 @@ class BoardVisualiser(tkinter.Frame):
         if x < 0 or y < 0 or x > 7 or y > 7:
             return
         self.clicked = True
-        print('visualiser:', self.clicked)
+
         if self.color == 'w':
             self.current_coordinates = (y,x)
         else:
@@ -192,10 +193,8 @@ class BoardVisualiser(tkinter.Frame):
         while(True):
             self.parent.wait_variable(self.wait_state)
             if self.wait_state.get() == 1:
-
                 self.draw()
             elif self.wait_state.get() == 2:
-                print('mouse')
                 break
 
         play_button.destroy()
@@ -270,24 +269,26 @@ class InitWindow():
     def widgets(self):
 
         self.label = tkinter.Label(self.parent, text="Choose time option: ", font=("Arial",18,""))
+        self.increment = tkinter.Label(self.parent, text="Choose increment: ", font=("Arial",18,""))
         self.time_array = [1, 3, 5, 10]
         self.increment_array = [0, 1, 2, 5]
         self.chosen_time = None
         self.chosen_increment = None
 
         self.label.place(x = 40, y = 10)
+        self.increment.place(x = 40, y = 120)
         self.frame.pack()
 
         start_button = tkinter.Button(self.parent, text = 'Start',font=("Arial",18,""), bd = '5' ,command = self.destroy_win)
-        start_button.place(x = 100, y = 200)
+        start_button.place(x = 104, y = 230)
 
         for i, time in enumerate(self.time_array):
             b = tkinter.Button(self.parent,text = f'{time}',font=("Arial",18,""), command = lambda i=i: self.choose_time(i))
-            b.place(x = 50 + i*50, y = 100)
+            b.place(x = 50 + i*50, y = 50)
 
         for i, increment in enumerate(self.increment_array):
             b = tkinter.Button(self.parent,text = f'{increment}',font=("Arial",18,""), command = lambda i=i: self.choose_increment(i))
-            b.place(x = 50 + i*50, y = 150)
+            b.place(x = 50 + i*50, y = 160)
 
     def choose_time(self, i):
         self.chosen_time = self.time_array[i]
@@ -307,16 +308,17 @@ class ClosingWindow():
 
         frame = tkinter.Frame(self.parent)
         if color == 'w':
-            win_color = 'black'
+            win_color = 'Black'
         else:
-            win_color = 'white'
+            win_color = 'White'
 
         if text == 'Checkmate':
             label = tkinter.Label(self.parent, font=("Arial",14), text=f"{text}, {win_color} wins").place(x = 120, y = 100)
         elif text == 'Draw':
-            label = tkinter.Label(self.parent, font=("Arial",14), text=f"{text}").place(x = 150, y = 100)
+            label = tkinter.Label(self.parent, font=("Arial",14), text=f"{text}").place(x = 195, y = 100)
         elif text == 'Time':
-            label = tkinter.Label(self.parent, font=("Arial",14), text=f"{text}, {color}").place(x = 150, y = 100)
+            #label = tkinter.Label(self.parent, font=("Arial",14), text=f"{text}, {color}").place(x = 150, y = 100)
+            label = tkinter.Label(self.parent, font=("Arial",14), text=f"{win_color} wins on time").place(x = 150, y = 100)
 
 
         play_button = tkinter.Button(self.parent, font=("Arial",14), text = "Play again", command = lambda: self.parent.destroy())
@@ -352,18 +354,23 @@ class Clock():
         self.minutes.set("00")
         self.seconds.set("00")
 
-        self.player_name = tkinter.Label(self.parent, width = 20, font=("Arial",18,""), text = f"Player {self.player+1}")
-        self.min_label = tkinter.Label(self.parent, width=3, font=("Arial",18,""), textvariable = self.minutes)
-        self.sec_label = tkinter.Label(self.parent, width=3, font=("Arial",18,""), textvariable = self.seconds)
+        self.player_name = tkinter.Label(self.parent, font=("Arial",11,""), text = f"Player {self.player+1}", bg = '#212121', fg = 'white')
+        self.min_label = tkinter.Label(self.parent, width=3, font=("Arial",18,""), textvariable = self.minutes, bg = '#212121', fg = 'white')
+        self.sec_label = tkinter.Label(self.parent, width=3, font=("Arial",18,""), textvariable = self.seconds, bg = '#212121', fg = 'white')
+        self.canvas = tkinter.Canvas(self.parent, width = 15, height = 15, bg = '#212121', highlightbackground = '#212121')
 
         if self.color == 'w':
-            self.player_name.place(x = 500, y = 20)
+            self.player_name.place(x = 634, y = 50)
             self.sec_label.place(x = 700, y = 20)
             self.min_label.place(x = 600,y = 20)
+            self.canvas.place(x = 694, y = 52)
+            self.canvas.create_rectangle(0, 15, 15, 0, fill = "white")
         if self.color == 'b':
-            self.player_name.place(x = 500, y = 200)
+            self.player_name.place(x = 634, y = 230)
             self.sec_label.place(x = 700, y = 200)
             self.min_label.place(x = 600, y = 200)
+            self.canvas.place(x = 694, y = 232)
+            self.canvas.create_rectangle(0, 15, 15, 0, fill = "black")
 
     def set_increment(self, increment):
         self.increment = increment
@@ -423,7 +430,7 @@ class Moves():
         self.frame = tkinter.Frame(self.parent)
         self.frame.place(x=570, y=80)
         self.labels = []
-        self.canvas = tkinter.Canvas(self.frame, height = 100, width = 200, bg = '#393d4f')
+        self.canvas = tkinter.Canvas(self.frame, height = 100, width = 200, bg = '#393d4f', highlightbackground = '#393d4f')
         self.canvas.pack(side= tkinter.LEFT, fill = tkinter.BOTH, expand = 1)
         self.scrollbar = tkinter.Scrollbar(self.frame, orient = tkinter.VERTICAL, command = self.canvas.yview)
         self.scrollbar.pack(side=tkinter.RIGHT, fill = tkinter.Y)
@@ -461,11 +468,11 @@ class Moves():
 class Score:
     def __init__(self, parent):
         self.parent = parent
-        self.frame = tkinter.Frame(self.parent)
+        self.frame = tkinter.Frame(self.parent, bg = '#212121')
         self.frame.place(x = 555, y = 410)
-        self.score_label = tkinter.Label(self.frame, width = 5, font=("Arial", 18), text = 'Score')
+        self.score_label = tkinter.Label(self.frame, width = 5, font=("Arial", 18), text = 'Score', bg = '#212121', fg = 'white')
         self.score_label.grid(row = 0, column = 1)
-        self.scores = [tkinter.Label(self.frame, width = 6, font=("Arial",16), text = 'Player 1\n0'), tkinter.Label(self.frame, width = 6, font=("Arial",16), text = 'Player 2\n0')]
+        self.scores = [tkinter.Label(self.frame, width = 6, font=("Arial",16), text = 'Player 1\n0', bg = '#212121', fg = 'white'), tkinter.Label(self.frame, width = 6, font=("Arial",16), text = 'Player 2\n0', bg = '#212121', fg = 'white')]
         self.scores[0].grid(row = 1, column = 0)
         self.scores[1].grid(row = 1, column = 2)
 

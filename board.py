@@ -240,7 +240,7 @@ class Board:
 
                         res.append((el[0]+pos[0], el[1]+pos[1]))
 
-            print(self.king_in_check[piece.color])
+            #print(self.king_in_check[piece.color])
 
             if self.check_castling(pos, 1):# and self.king_in_check[piece.color] == Checked_by.NONE:
                res.append((pos[0], pos[1]+2))
@@ -502,7 +502,7 @@ class Board:
 
         if self.is_in_check(color, res = self.attackers):
             #king_moves = self.get_legal_moves(pos)
-            print('is in check')
+            #print('is in check')
 
             opponent_piece = self.attackers[0]
 
@@ -512,15 +512,15 @@ class Board:
                     self.king_in_check[color] = Checked_by.KNIGHT
             else:
                 self.king_in_check[color] = Checked_by.ONE
-                print("checked_by_one")
+                #print("checked_by_one")
 
             if self.get_legal_moves(pos):
                return False
 
             if len(self.attackers) == 2:
                 #self.king_in_check[color] = Checked_by.TWO
-                print(self.attackers)
-                print("dwie atakuja")
+                #print(self.attackers)
+                #print("dwie atakuja")
                 return True
 
             else:
@@ -529,7 +529,7 @@ class Board:
                 else:
                     color2 = 'w'
 
-                print('w elsie')
+                #print('w elsie')
                 """
                 czesc 2:
                 sprawdzamy, czy mozemy zbic figury, ktore atakuja figury, ktore szachuja krola
@@ -582,12 +582,12 @@ class Board:
 
                     if self.is_in_check(color2, attackers3, el, pawn_kill = False):
                         #print(el)
-                        print(attackers3)
+                        #print(attackers3)
                         for piece in attackers3:
                             direction = (el[0]-piece[0], el[1]-piece[1])
 
                             if not self.discovers_check(direction, piece):
-                                print("Piece: ", piece, "in dir", direction)
+                                #print("Piece: ", piece, "in dir", direction)
                                 return False
 
                 return True  #chyba?
@@ -603,7 +603,7 @@ class Board:
         if piece is None:
             return res
 
-        print("GET MOVES IN CHECK: ", self.king_in_check[piece.color])
+        #print("GET MOVES IN CHECK: ", self.king_in_check[piece.color])
 
         if self.king_in_check[piece.color] == Checked_by.TWO:
             if not isinstance(piece, pieces.King):
@@ -631,9 +631,9 @@ class Board:
 
             squares_in_check.append(self.attackers[0])
 
-            print("Squares in between: ", squares_in_check)
+            #print("Squares in between: ", squares_in_check)
 
-            print('Legal moves:', legal_moves)
+            #print('Legal moves:', legal_moves)
 
             for el in legal_moves:
                 if el in squares_in_check or el in self.attackers:

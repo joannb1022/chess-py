@@ -48,14 +48,16 @@ class Engine:
                 self.visualiser.draw()
                 if(self.game.is_checkmate(self.turn)):
                     self.reset_clocks()
-                    self.visualiser.open_new_window(ClosingWindow, review = self.visualiser.show_game, color = self.turn, text = 'Checkmate')
                     temp_col = 'w' if self.turn == 'b' else 'b'
                     self.scores[self.players[temp_col]] +=1
+                    self.visualiser.scores.update_scores(self.scores)
+                    self.visualiser.open_new_window(ClosingWindow, review = self.visualiser.show_game, color = self.turn, text = 'Checkmate')
                     break
                 elif self.game.is_stalemate(self.turn):
                     self.reset_clocks()
-                    self.visualiser.open_new_window(ClosingWindow, review = self.visualiser.show_game, color = self.turn, text = 'Draw')
                     self.scores[0], self.scores[1] = self.scores[0]+0.5, self.scores[1]+0.5
+                    self.visualiser.scores.update_scores(self.scores)
+                    self.visualiser.open_new_window(ClosingWindow, review = self.visualiser.show_game, color = self.turn, text = 'Draw')
                     break
                 elif self.time_end():
                     self.reset_clocks()
@@ -77,17 +79,17 @@ class Engine:
             if self.visualiser.show_game[0]:
                 self.visualiser.review_game(self.game.move_history)
 
-            print(self.visualiser.show_game)
+            #print(self.visualiser.show_game)
 
-            print("After end")
+            #print("After end")
             self.players['w'], self.players['b'] = self.players['b'], self.players['w']
-            self.visualiser.scores.update_scores(self.scores)
+            #self.visualiser.scores.update_scores(self.scores)
 
 
     def make_move(self, color):
         #while True:
 
-        print("1Select square:")
+        #print("1Select square:")
         self.visualiser.parent.wait_variable(self.visualiser.wait_state)
 
         if self.end:
@@ -100,7 +102,7 @@ class Engine:
         temp_piece = self.game.board[temp_square[0]][temp_square[1]].piece
 
         while temp_piece is None or temp_piece.color != color :
-            print("2Select square:")
+            #print("2Select square:")
 
             self.visualiser.parent.wait_variable(self.visualiser.wait_state)
 
@@ -119,7 +121,7 @@ class Engine:
         self.visualiser.set_squares_to_change(self.visualiser.squares_to_highlight)
         self.visualiser.set_squares_to_highlight(available_squares)
 
-        print(self.visualiser.squares_to_highlight)
+        #print(self.visualiser.squares_to_highlight)
 
         self.visualiser.draw()
 
@@ -128,7 +130,7 @@ class Engine:
 
         flag = 1
         while flag:
-            print("Select target square:")
+            #print("Select target square:")
 
             self.visualiser.parent.wait_variable(self.visualiser.wait_state)
 
@@ -155,7 +157,7 @@ class Engine:
                 curr_piece = self.game.board[self.chosen_square[0]][self.chosen_square[1]].piece
 
                 while not available_squares or curr_piece is None or curr_piece.color != color:
-                    print("3Select square:")
+                    #print("3Select square:")
 
                     self.visualiser.parent.wait_variable(self.visualiser.wait_state)
 
@@ -207,11 +209,16 @@ class Engine:
     def start_game(self):
         self.restart_game()
         self.init_win = self.visualiser.start_game()
-        self.time_option = self.init_win.chosen_time
+        
         if not self.init_win.chosen_increment:
             self.increment_option = 0
         else:
             self.increment_option = self.init_win.chosen_increment
+        if not self.init_win.chosen_time:
+            self.time_option = 3
+        else:
+            self.time_option = self.init_win.chosen_time
+        
 
     def set_clocks(self):
         clock_white, clock_black = self.visualiser.set_clocks(self.players)
@@ -233,11 +240,15 @@ class Engine:
         if self.clocks['w'].time_end == True:
             color = 'white'
             self.scores[self.players['b']] +=1
+            self.visualiser.scores.update_scores(self.scores)
+
             self.visualiser.open_new_window(ClosingWindow, review = self.visualiser.show_game, color = color, text = 'Time')
             return True
         elif self.clocks['b'].time_end == True:
             color = 'black'
             self.scores[self.players['w']] +=1
+            self.visualiser.scores.update_scores(self.scores)
+
             self.visualiser.open_new_window(ClosingWindow, review = self.visualiser.show_game, color = color, text = 'Time')
             return True
         return False
