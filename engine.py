@@ -56,6 +56,9 @@ class Engine:
                     self.visualiser.open_new_window(ClosingWindow, review = self.visualiser.show_game, color = self.turn, text = 'Draw')
                     self.scores[0], self.scores[1] = self.scores[0]+0.5, self.scores[1]+0.5
                     break
+                elif self.time_end():
+                    self.reset_clocks()
+                    break
                 self.make_move(self.turn)
                 self.chosen_square = None
                 self.clocks[self.turn].stop_clock()
@@ -225,6 +228,18 @@ class Engine:
         self.clocks['b'].stop_clock()
         self.clocks['b'].reset_clock()
 
+    def time_end(self):
+        if self.clocks['w'].time_end == True:
+            color = 'white'
+            self.scores[self.players['b']] +=1
+            self.visualiser.open_new_window(ClosingWindow, review = self.visualiser.show_game, color = color, text = 'Time')
+            return True
+        elif self.clocks['b'].time_end == True:
+            color = 'black'
+            self.scores[self.players['w']] +=1
+            self.visualiser.open_new_window(ClosingWindow, review = self.visualiser.show_game, color = color, text = 'Time')
+            return True
+        return False
     def end_game(self):
         self.end = True
         self.visualiser.wait_state.set(1)

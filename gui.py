@@ -312,9 +312,11 @@ class ClosingWindow():
             win_color = 'white'
 
         if text == 'Checkmate':
-            label = tkinter.Label(self.parent, font=("Arial",14), text=f"{text}, {win_color} has won").place(x = 120, y = 100)
+            label = tkinter.Label(self.parent, font=("Arial",14), text=f"{text}, {win_color} wins").place(x = 120, y = 100)
         elif text == 'Draw':
             label = tkinter.Label(self.parent, font=("Arial",14), text=f"{text}").place(x = 150, y = 100)
+        elif text == 'Time':
+            label = tkinter.Label(self.parent, font=("Arial",14), text=f"{text}, {color}").place(x = 150, y = 100)
 
 
         play_button = tkinter.Button(self.parent, font=("Arial",14), text = "Play again", command = lambda: self.parent.destroy())
@@ -339,6 +341,7 @@ class Clock():
         self.end_game = False
         self.first_move = True
         self.player = player
+        self.time_end = False
         self.widgets()
 
 
@@ -386,7 +389,7 @@ class Clock():
 
             if self.total_times == 0:
                 self.running = False
-                #i jakos trzeba skonczyc gre
+                self.time_end = True
 
             self.total_times -= 1
 
