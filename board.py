@@ -3,6 +3,7 @@ import move
 from square import Square
 from enum import Enum
 
+
 class Checked_by(Enum):
     NONE = 0
     ONE = 1
@@ -10,8 +11,9 @@ class Checked_by(Enum):
     TWO = 3
 
 
-
 class Board:
+    """Klasa przechowująca szachownicę oraz informację o jej stanie i wykonanych ruchach"""
+
     def __init__(self):
         self.board = [[Square() for _ in range(8)] for _ in range(8)]
         self.black_king = (0,4)
@@ -52,8 +54,8 @@ class Board:
             for j in range(8):
                 self.board[i][j].remove_piece()
 
-
     def move_piece(self, s_pos, t_pos, real_move = False):
+        """przesuń figurę na szachownicy"""
 
         s_square = self.board[s_pos[0]][s_pos[1]]
         t_square = self.board[t_pos[0]][t_pos[1]]
@@ -66,8 +68,6 @@ class Board:
                     piece.en_passant_decreasing = False
                     piece.en_passant_increasing = False
             self.en_passant = []
-
-        #s_square = self.board[s_pos[0]][s_pos[1]]
 
         if isinstance(s_square.piece, pieces.King):
             if s_square.piece.color == 'b':
@@ -108,15 +108,6 @@ class Board:
                         p_square.piece.en_passant_decreasing = True
                         self.en_passant.append((t_pos[0], t_pos[1]+1))
 
-            #elif s_square.piece.en_passant_increasing and t_pos[1]-s_pos[1] == 1 and real_move:
-            # elif t_square.piece is None and t_pos[1]-s_pos[1] == 1 and real_move:
-            #     self.board[s_pos[0]][t_pos[1]].remove_piece()
-            #     curr_move.en_passant = True
-            # #elif s_square.piece.en_passant_decreasing and t_pos[1]-s_pos[1] == -1 and real_move:
-            # elif t_square.piece is None and t_pos[1]-s_pos[1] == -1 and real_move:
-            #     self.board[s_pos[0]][t_pos[1]].remove_piece()
-            #     curr_move.en_passant = True
-
             elif t_square.piece is None and abs(t_pos[1]-s_pos[1]) == 1 and real_move:
                 curr_move.taken_piece = self.board[s_pos[0]][t_pos[1]].remove_piece()
                 curr_move.en_passant = True
@@ -124,11 +115,6 @@ class Board:
 
             if t_pos[0] == 0 or t_pos[0] == 7:
                 curr_move.promotion = True
-
-            # if real_move:
-            #     s_square.piece.en_passant_decreasing = False
-            #     s_square.piece.en_passant_increasing = False
-            #     s_square.piece.can_move_two = False
 
         piece = s_square.remove_piece()
 
@@ -139,8 +125,9 @@ class Board:
         if real_move:
             piece.can_castle = False
 
-
     def get_squares_in_between(self, pos1, pos2):
+        """zwraca wszystkie pola pomiędzy 2 innymi polami"""
+
         res = []
 
         if pos1[0] == pos2[0]:
@@ -172,24 +159,16 @@ class Board:
                     curr = (curr[0]+1, curr[1]-1)
         return res
 
-
-    def print_board(self):
-        for i in range(8):
-            for j in range(8):
-                if self.board[i][j].piece is None:
-                    print("oo", ' ', end = "")
-                else:
-                    print(self.board[i][j].piece.draw(), " ", end = "")
-            print('\n')
-
-
     def get_moves(self, pos, color):
+        """legalne ruchy figury (gdy król jest szachowany i gdy nie jest)"""
+
         if self.king_in_check[color] != Checked_by.NONE:
             return self.get_moves_in_check(pos)
         return self.get_legal_moves(pos)
 
-
     def get_legal_moves(self,pos):
+        """legalne ruchy figury, gdy król gracza nie jest szachowany"""
+
         piece = self.board[pos[0]][pos[1]].piece
         res = []
 
@@ -208,12 +187,10 @@ class Board:
                 if piece.can_move_two and (pos[0]%7 == 6 or pos[0]%7 == 1) and self.board[2*multip+pos[0]][pos[1]].is_empty() and not self.discovers_check((multip*2, 0), pos):
                     res.append((pos[0]+multip*2, pos[1]))
 
-
             if pos[1]-1 > -1:
                 curr_square = self.board[multip+pos[0]][pos[1]-1]
                 if not curr_square.is_empty() and curr_square.piece.color != piece.color and not self.discovers_check((multip, -1), pos):
                     res.append((multip+pos[0], pos[1]-1))
-
 
             if pos[1]+1 < 8:
                 curr_square = self.board[multip+pos[0]][pos[1]+1]
@@ -222,12 +199,9 @@ class Board:
 
             en_passant = piece.get_en_passant()
 
-
             for el in en_passant:
                 if not self.discovers_check(el, pos):
                     res.append((pos[0]+el[0], pos[1]+el[1]))
-
-
 
         elif isinstance(piece, pieces.King):
             directions = piece.get_directions()
@@ -240,11 +214,9 @@ class Board:
 
                         res.append((el[0]+pos[0], el[1]+pos[1]))
 
-            #print(self.king_in_check[piece.color])
-
-            if self.check_castling(pos, 1):# and self.king_in_check[piece.color] == Checked_by.NONE:
+            if self.check_castling(pos, 1):
                res.append((pos[0], pos[1]+2))
-            if self.check_castling(pos, -1):# and self.king_in_check[piece.color] == Checked_by.NONE:
+            if self.check_castling(pos, -1):
                res.append((pos[0], pos[1]-2))
 
 
@@ -267,26 +239,21 @@ class Board:
                 j = pos[1]+el[1]
 
                 counter = 1
-                #if i > -1 and i < 8 and j > -1 and j < 8 and not self.discovers_check(el,pos):
+                
                 while i > -1 and i < 8 and j > -1 and j < 8 and self.board[i][j].is_empty():
                     if not self.discovers_check((counter*el[0], counter*el[1]), pos):
                         res.append((i,j))
                     i += el[0]
                     j += el[1]
                     counter += 1
-                    #while i > -1 and i < 8 and j > -1 and j < 8 and self.board[i][j].is_empty():
-                        #res.append((i,j))
-                        #i += el[0]
-                        #j += el[1]
 
-                    #if i > -1 and i < 8 and j > -1 and j < 8 and self.board[i][j].piece.color != piece.color:
-                    #    res.append((i,j))
                 if i > -1 and i < 8 and j > -1 and j < 8 and self.board[i][j].piece.color != piece.color and not self.discovers_check((counter*el[0], counter*el[1]), pos):
                     res.append((i,j))
 
         return res
 
     def check_castling(self, king_pos, direction):
+        """czy figura przeciwnika nie przeszkadza w roszadzie"""
 
         king = self.board[king_pos[0]][king_pos[1]].piece
 
@@ -312,6 +279,7 @@ class Board:
 
 
     def is_in_check(self, color, res = None, pos = None, pawn_kill = True):
+        """czy król jest w szachu"""
 
         if pos is None:
             if color == 'b':
@@ -343,7 +311,7 @@ class Board:
             if not curr_square.is_empty():
                 if curr_square.piece.color == color:
                     break
-                elif isinstance(curr_square.piece, pieces.Queen) or isinstance(curr_square.piece, pieces.Rook): ######
+                elif isinstance(curr_square.piece, pieces.Queen) or isinstance(curr_square.piece, pieces.Rook):
                     if res is not None:
                         res.append((i, pos[1]))
                     else:
@@ -382,9 +350,7 @@ class Board:
                         return True
                 break
 
-
-            #DIAGONAL
-
+        #sprawdzanie przekątnych
         j = 1
         while pos[0]-j > -1 and pos[1]+j < 8:
             curr_square = self.board[pos[0]-j][pos[1]+j]
@@ -397,7 +363,7 @@ class Board:
                         res.append((pos[0]-j, pos[1]+j))
                     else:
                         return True
-                break#####
+                break
             j+=1
 
         j = 1
@@ -412,7 +378,7 @@ class Board:
                         res.append((pos[0]+j, pos[1]+j))
                     else:
                         return True
-                break#####
+                break
             j+=1
 
         j = 1
@@ -427,7 +393,7 @@ class Board:
                         res.append((pos[0]+j, pos[1]-j))
                     else:
                         return True
-                break#####
+                break
             j+=1
 
         j = 1
@@ -442,9 +408,10 @@ class Board:
                         res.append((pos[0]-j, pos[1]-j))
                     else:
                         return True
-                break#####
+                break
             j+=1
 
+        #sprawdzanie czy koń nie szachuje pola
         possible_knights = pieces.Knight.get_directions()
 
         for el in possible_knights:
@@ -462,6 +429,8 @@ class Board:
 
 
     def get_piece(self, pos):
+        """zwraca figurę z danego pola"""
+        
         piece = self.board[pos[0]][pos[1]].get_piece()
         if piece is None:
             return None, None
@@ -469,6 +438,8 @@ class Board:
 
 
     def discovers_check(self, dir,pos):
+        """czy ruch odsłania szacha"""
+
         color = self.board[pos[0]][pos[1]].piece.color
 
         self.move_piece(pos, (pos[0]+dir[0], pos[1]+dir[1]))
@@ -480,8 +451,8 @@ class Board:
 
 
     def is_checkmate(self, color):
+        """czy jest mat"""
 
-        #self.king_in_check[color] = Checked_by.NONE
         #czyszczenie tablicy figur atakujących króla w przypadku wykonania ruchu przez gracza
         self.attackers = []
 
@@ -490,20 +461,8 @@ class Board:
         else:
             pos = self.black_king
 
-        #print("pos", pos)
-        """
-
-        czesc 1:
-        jesli krol jest w szachu, sprawdzamy, czy moze sie ruszyc
-        jesli tak -> zawracamy false, nie ma mata
-        jesli nie i jesli szachowany jest przez dwie figury (len(attackers)==2) -> zwracamy true, jest mat
-
-        """
-
+        #jeśli król jest w szachu, to sprawdzamy czy może się ruszyć. Jeśli nie może i jest atakowany przez 2 figury, to jest mat.
         if self.is_in_check(color, res = self.attackers):
-            #king_moves = self.get_legal_moves(pos)
-            #print('is in check')
-
             opponent_piece = self.attackers[0]
 
             if len(self.attackers) == 2:
@@ -512,50 +471,26 @@ class Board:
                     self.king_in_check[color] = Checked_by.KNIGHT
             else:
                 self.king_in_check[color] = Checked_by.ONE
-                #print("checked_by_one")
 
+            #czy król może się ruszyć
             if self.get_legal_moves(pos):
                return False
 
+            #jeśli 2 atakujących -> mat
             if len(self.attackers) == 2:
-                #self.king_in_check[color] = Checked_by.TWO
-                #print(self.attackers)
-                #print("dwie atakuja")
                 return True
-
             else:
                 if color == 'w':
                     color2 = 'b'
                 else:
                     color2 = 'w'
 
-                #print('w elsie')
-                """
-                czesc 2:
-                sprawdzamy, czy mozemy zbic figury, ktore atakuja figury, ktore szachuja krola
-                nalezy sprawdzic, czy po zbiciu figury szachujacej nie ma szacha
-                jesli istenieje bicie ratujace szacha -> zwracamy true
-                jesli nie ma takiego bicia, ktore ratuje krola, a figura szachujaca jest konik -> zwracamy prawde, krol jest w szachu
-
-                """
                 #figury atakujace figury, ktore szachuja krola
                 attackers2 = []
-
-                #figura atakujaca krola
-                #opponent_piece = self.attackers[0]
-                #sprawdzamy, jakie figury atakuja opponent_piece
                 self.is_in_check(color2, res = attackers2, pos = opponent_piece)
-                # print(attackers2)
-
-                #if isinstance(self.board[opponent_piece[0]][opponent_piece[1]].piece, pieces.Knight):
-                #    self.king_in_check[color] = Checked_by.KNIGHT
-                #else:
-                #    self.king_in_check[color] = Checked_by.ONE
-                #    print("checked_by_one")
-
+                
+                #sprawdzamy czy można zbić figurę atakującą króla bez odsłonięcia kolejnego szacha
                 for el in attackers2:
-
-                    #dla kazdej figury z attackers2 nalezy sprawdzic, czy kiedy zabijemy nia opponent_piece, nie bedzie nadal szacha
                     direction = (opponent_piece[0]-el[0], opponent_piece[1]-el[1])
                     if not self.discovers_check(direction, el):
                         return False
@@ -563,47 +498,33 @@ class Board:
                 if isinstance(self.board[opponent_piece[0]][opponent_piece[1]].piece, pieces.Knight):
                     return True
 
-                """
-                czesc 3:
-                sprawdzamy pola pomiedzy figura atakujaca a krolem
-                jesli jest mozliwe zasloniecie krola i po tym ruchu nie ma szacha -> false, krol nie jest w macie
-                """
-
+                #sprawdzamy czy da się zasłonić króla od szacha
                 squares_under_check = self.get_squares_in_between(opponent_piece, pos)
 
-
                 for el in squares_under_check:
-                    #print(el)
-
                     #figury mogące zablokować szacha poprzez zaslonienie krola
                     attackers3 = []
-                    #ha = self.is_in_check(color2, attackers3, el, pawn_kill = False)
-                    #print(attackers3)
-
                     if self.is_in_check(color2, attackers3, el, pawn_kill = False):
-                        #print(el)
-                        #print(attackers3)
                         for piece in attackers3:
                             direction = (el[0]-piece[0], el[1]-piece[1])
-
                             if not self.discovers_check(direction, piece):
-                                #print("Piece: ", piece, "in dir", direction)
                                 return False
-
-                return True  #chyba?
+                return True
         else:
             self.king_in_check[color] = Checked_by.NONE
 
-        return False #bo jesli nie ma szacha, to na pewno nie ma mata
+        return False
 
+
+    
     def get_moves_in_check(self, pos):
+        """możliwe ruchy figury, gdy król gracza jest w szachu"""
+
         piece = self.board[pos[0]][pos[1]].piece
 
         res = []
         if piece is None:
             return res
-
-        #print("GET MOVES IN CHECK: ", self.king_in_check[piece.color])
 
         if self.king_in_check[piece.color] == Checked_by.TWO:
             if not isinstance(piece, pieces.King):
@@ -617,7 +538,7 @@ class Board:
             if isinstance(piece, pieces.King):
                 return self.get_legal_moves(pos)
             else:
-                if self.attackers[0] in legal_moves: #####
+                if self.attackers[0] in legal_moves:
                     return self.attackers
 
         elif self.king_in_check[piece.color] == Checked_by.ONE:
@@ -631,18 +552,14 @@ class Board:
 
             squares_in_check.append(self.attackers[0])
 
-            #print("Squares in between: ", squares_in_check)
-
-            #print('Legal moves:', legal_moves)
-
             for el in legal_moves:
                 if el in squares_in_check or el in self.attackers:
                     res.append(el)
-
         return res
 
-
     def is_stalemate(self, color):
+        """czy jest pat"""
+
         if not self.king_in_check[color] == Checked_by.NONE:
             return False
 
@@ -653,39 +570,10 @@ class Board:
         return True
 
     def reverse_move(self):
+        """odwracanie ruchu"""
 
         hist = self.move_history[-1]
-
         self.move_piece(hist.end_pos, hist.start_pos)
         self.board[hist.end_pos[0]][hist.end_pos[1]].place_piece(hist.taken_piece)
         self.move_history.pop()
         self.move_history.pop()
-
-
-if __name__ == '__main__':
-    b = Board()
-    b.place_pieces()
-
-    # b.board[6][4].remove_piece()
-    # b.move_piece(3,0, 4, 6)
-    # b.move_piece(2,0,0,2)
-    # b.move_piece(0,6, 3,7)
-    # b.move_piece(1,6, 5,7)
-    # b.move_piece(2,6, 6,7)
-    # #b.board[7][3].remove_piece()
-    # b.board[7][5].remove_piece()
-
-    b.move_piece((0,3), (1,4))
-    b.move_piece((6,4), (3,4), True)
-
-    b.move_piece((1,3), (3,3), True)
-
-
-    #b.move_piece((3,4), (2,3))
-    #b.move_piece((7,3), (3,3), True)
-
-    print(b.get_legal_moves((3,4)))
-
-    b.print_board()
-    #print(b.is_checkmate('w'))
-    #print(b.check_castling((7,4), 1))

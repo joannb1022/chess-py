@@ -14,12 +14,12 @@ class Square:
         if self.piece is None:
             return True
         return False
-        #return self.piece
 
     def get_piece(self):
         return self.piece
 
     def get_image(self):
+        """zwraca obrazek png figury stojącej na danym polu"""
         if self.piece:
             return self.piece.get_image()
         return None

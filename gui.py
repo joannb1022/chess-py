@@ -8,6 +8,7 @@ import pieces
 
 
 class BoardVisualiser(tkinter.Frame):
+    """narzędzie do wizualizacji szachownicy"""
 
     def __init__(self, parent, board, size = 64):
         self.size = size
@@ -22,15 +23,12 @@ class BoardVisualiser(tkinter.Frame):
         self.color = 'w'
         self.prev_color = 'w'
         self.show_game = [False]
-
         self.new_window = None
         self.wait_state = tkinter.IntVar()
-
-      
+        self.clock_white = None
+        self.clock_black = None
 
         tkinter.Frame.__init__(self, parent)
-
-
         self.frame = tkinter.Frame(parent)
         self.frame.pack(side = tkinter.LEFT)
         self.canvas = tkinter.Canvas(self.frame, width = canvas_width, height = canvas_height)
@@ -38,23 +36,23 @@ class BoardVisualiser(tkinter.Frame):
         self.parent.geometry(f"{canvas_width+300}x{canvas_height}")
         self.canvas.pack()
         self.background.place(x = canvas_width, y = 0)
-
         self.scores = Score(self.parent)
         self.move_history = Moves(self.parent)
-
         self.parent.bind('<Button>', self.get_coord)
         self.parent.resizable(False, False)
-
         self.load_images()
         self.draw()
 
     def start_game(self):
+        """uruchomienie okna do wyboru formatu czasowego gry"""
+
         self.new = tkinter.Toplevel(self.parent)
         self.new.attributes('-topmost', True)
         self.new_window = InitWindow(self.new)
         return self.new_window
 
     def draw(self):
+        """funkcja wywołana po pacie"""
 
         self.squares_to_change = []
         for i in range(8):
@@ -62,7 +60,6 @@ class BoardVisualiser(tkinter.Frame):
                 self.squares_to_change.append((i,j))
 
         self.canvas.delete("all")
-
         for el in self.squares_to_change:
             if (el[0]+el[1]) % 2 != 0:
                 filler = '#a76d3e'
@@ -72,7 +69,6 @@ class BoardVisualiser(tkinter.Frame):
                 self.canvas.create_rectangle(el[1]*self.size, el[0]*self.size, (el[1]+1)*self.size, (el[0]+1)*self.size, fill = filler, width = 0, tag = f'{el[0]}{el[1]}')
             else:
                 self.canvas.create_rectangle((7-el[1])*self.size, (7-el[0])*self.size, (7-el[1]+1)*self.size, (7-el[0]+1)*self.size, fill = filler, width = 0, tag = f'{7-el[0]}{7-el[1]}')
-
 
         for el in self.squares_to_change:
             if self.board.get_piece(el) != (None, None):
@@ -97,19 +93,21 @@ class BoardVisualiser(tkinter.Frame):
                 else:
                     self.canvas.create_oval((7-el[1]+0.4)*self.size, (7-el[0]+0.4)*self.size, (7-el[1]+0.6)*self.size, (7-el[0]+0.6)*self.size, fill = '#1C9005', outline = '#1C9005', tag = f'{7-el[0]}{7-el[1]}')
 
-
     def higlight_square(self, square):
+        """podświetlanie pola na szachownicy"""
+
         self.canvas.create_polygon(square[1]*self.size, square[0]*self.size, square[1]*self.size, square[0]*self.size+16, square[1]*self.size+16, square[0]*self.size, fill = '#1C9005', tag = f'{square[0]}{square[1]}')
         self.canvas.create_polygon((square[1]+1)*self.size-16, square[0]*self.size, (square[1]+1)*self.size, square[0]*self.size, (square[1]+1)*self.size, square[0]*self.size+16, fill = '#1C9005', tag = f'{square[0]}{square[1]}')
         self.canvas.create_polygon((square[1]+1)*self.size-16, (square[0]+1)*self.size, (square[1]+1)*self.size, (square[0]+1)*self.size, (square[1]+1)*self.size, (square[0]+1)*self.size-16, fill = '#1C9005', tag = f'{square[0]}{square[1]}')
         self.canvas.create_polygon(square[1]*self.size, (square[0]+1)*self.size-16, square[1]*self.size, (square[0]+1)*self.size, square[1]*self.size+16, (square[0]+1)*self.size, fill = '#1C9005', tag = f'{square[0]}{square[1]}')
 
     def load_images(self):
+        """ładowanie zdjęć figur"""
+
         pngs = listdir('pieces')
         for file_name in pngs:
             piece_image = tkinter.PhotoImage(file=f'pieces/{file_name}')
             self.pieces[file_name[:2]] = piece_image
-
 
     def set_squares_to_change(self, squares):
         self.squares_to_change = squares
@@ -118,6 +116,8 @@ class BoardVisualiser(tkinter.Frame):
         self.squares_to_highlight = squares
 
     def get_coord(self, event):
+        """zwraca koordynaty klikniętego pola"""
+
         x, y = int(event.x/self.size), int(event.y/self.size)
         if x < 0 or y < 0 or x > 7 or y > 7:
             return
@@ -127,7 +127,6 @@ class BoardVisualiser(tkinter.Frame):
             self.current_coordinates = (y,x)
         else:
             self.current_coordinates = (7-y, 7-x)
-
         self.wait_state.set(1)
 
     def set_wait_state(self):
@@ -143,8 +142,9 @@ class BoardVisualiser(tkinter.Frame):
         self.clock_black = Clock(self.parent, 'b', players['b'])
         return self.clock_white, self.clock_black
 
-
     def review_game(self, history):
+        """analiza przebiegu gry"""
+
         past_moves = []
         future_moves = []
         self.color = 'w'
@@ -157,7 +157,6 @@ class BoardVisualiser(tkinter.Frame):
 
             if event.keysym == 'Left' and len(past_moves) > 0:
                 move = past_moves.pop()
-                #self.board.move_piece(move.end_pos, move.start_pos, True)
                 piece = self.board.board[move.end_pos[0]][move.end_pos[1]].remove_piece()
                 self.board.board[move.start_pos[0]][move.start_pos[1]].place_piece(piece)
 
@@ -172,9 +171,9 @@ class BoardVisualiser(tkinter.Frame):
 
                 future_moves.append(move)
                 self.wait_state.set(1)
+
             elif event.keysym == 'Right' and len(future_moves) > 0:
                 move = future_moves.pop()
-
                 self.board.move_piece(move.start_pos, move.end_pos, True)
 
                 if move.promotion:
@@ -187,7 +186,6 @@ class BoardVisualiser(tkinter.Frame):
         self.parent.bind('<KeyPress>', on_key_press)
         play_button = tkinter.Button(self.parent, text = "Play again", font=("Arial", 14), command = lambda: self.wait_state.set(2), background='#345', activebackground='#345', fg = 'white')
         play_button.place(x = 615, y = 300)
-
         self.draw()
 
         while(True):
@@ -201,12 +199,10 @@ class BoardVisualiser(tkinter.Frame):
         self.parent.unbind('<KeyPress>')
 
 
-
-
 class PromotionWindow(tkinter.Frame):
-    def __init__(self, parent, color, text, review):
-        # tkinter.Frame.__init__(self, parent)
+    """okienko do promocji piona"""
 
+    def __init__(self, parent, color, text, review):
         self.parent = parent
         self.parent.geometry("280x100")
         self.frame = tkinter.Frame(self.parent)
@@ -214,24 +210,15 @@ class PromotionWindow(tkinter.Frame):
         self.images = {}
         self.pieces = [f'{color}R', f'{color}N', f'{color}B', f'{color}Q']
         self.chosen_piece = None
-
-        self.widgets()
-
-        self.parent.wait_window(self.parent)
-
-
-    def widgets(self):
-
         self.label = tkinter.Label(self.parent, text="Choose piece")
         self.label.pack()
         self.frame.pack()
-
         self.load_images()
+        self.buttons = []
         self.load_buttons()
-
+        self.parent.wait_window(self.parent)
 
     def load_buttons(self):
-        self.buttons = []
         for i, piece in enumerate(self.pieces):
             photo = self.images[piece]
             b = tkinter.Button(self.parent, height = self.size, width = self.size, image = photo, command = lambda i=i: self.button_press(i))
@@ -240,10 +227,8 @@ class PromotionWindow(tkinter.Frame):
             self.buttons.append(b)
 
     def button_press(self, i):
-        #0 wieza, 1 konik, 2 goniec, 3 krolowa
         self.chosen_piece = self.pieces[i]
         self.parent.destroy()
-
 
     def load_images(self):
         for file_name in self.pieces:
@@ -254,38 +239,32 @@ class PromotionWindow(tkinter.Frame):
 
 
 class InitWindow():
-    def __init__(self, parent):
-        # tkinter.Frame.__init__(self, parent)
+    """startowe okno gry"""
 
+    def __init__(self, parent):
         self.parent = parent
         self.size = 300
         self.parent.geometry(f'{self.size}x{self.size}')
         self.frame = tkinter.Frame(self.parent)
-
-        self.widgets()
-
-        self.parent.wait_window(self.parent)
-
-    def widgets(self):
-
         self.label = tkinter.Label(self.parent, text="Choose time option: ", font=("Arial",18,""))
         self.increment = tkinter.Label(self.parent, text="Choose increment: ", font=("Arial",18,""))
         self.time_array = [1, 3, 5, 10]
         self.increment_array = [0, 1, 2, 5]
         self.chosen_time = None
         self.chosen_increment = None
-
         self.label.place(x = 40, y = 10)
         self.increment.place(x = 40, y = 120)
         self.frame.pack()
+        self.widgets()
+        self.parent.wait_window(self.parent)
 
+    def widgets(self):
         start_button = tkinter.Button(self.parent, text = 'Start',font=("Arial",18,""), bd = '5' ,command = self.destroy_win)
         start_button.place(x = 104, y = 230)
 
         for i, time in enumerate(self.time_array):
             b = tkinter.Button(self.parent,text = f'{time}',font=("Arial",18,""), command = lambda i=i: self.choose_time(i))
             b.place(x = 50 + i*50, y = 50)
-
         for i, increment in enumerate(self.increment_array):
             b = tkinter.Button(self.parent,text = f'{increment}',font=("Arial",18,""), command = lambda i=i: self.choose_increment(i))
             b.place(x = 50 + i*50, y = 160)
@@ -301,10 +280,11 @@ class InitWindow():
 
 
 class ClosingWindow():
+    """okno pod koniec gry"""
+
     def __init__(self, parent, review, color, text):
         self.parent = parent
         self.parent.geometry("450x300")
-
 
         frame = tkinter.Frame(self.parent)
         if color == 'w':
@@ -317,16 +297,12 @@ class ClosingWindow():
         elif text == 'Draw':
             label = tkinter.Label(self.parent, font=("Arial",14), text=f"{text}").place(x = 195, y = 100)
         elif text == 'Time':
-            #label = tkinter.Label(self.parent, font=("Arial",14), text=f"{text}, {color}").place(x = 150, y = 100)
             label = tkinter.Label(self.parent, font=("Arial",14), text=f"{win_color} wins on time").place(x = 150, y = 100)
-
 
         play_button = tkinter.Button(self.parent, font=("Arial",14), text = "Play again", command = lambda: self.parent.destroy())
         review_button = tkinter.Button(self.parent, font=("Arial",14), text = "Review game", command = lambda rev = review: self.review_game(rev))
-
         play_button.place(x =  90, y = 200)
         review_button.place(x = 210, y = 200)
-
         self.parent.wait_window(self.parent)
 
     def review_game(self, review):
@@ -335,6 +311,8 @@ class ClosingWindow():
 
 
 class Clock():
+    """klasa zegara"""
+
     def __init__(self, parent, color, player):
         self.parent = parent
         self.running = False
@@ -344,21 +322,17 @@ class Clock():
         self.first_move = True
         self.player = player
         self.time_end = False
-        self.widgets()
-
-
-    def widgets(self):
-
         self.minutes = tkinter.StringVar()
         self.seconds = tkinter.StringVar()
         self.minutes.set("00")
         self.seconds.set("00")
-
         self.player_name = tkinter.Label(self.parent, font=("Arial",11,""), text = f"Player {self.player+1}", bg = '#212121', fg = 'white')
         self.min_label = tkinter.Label(self.parent, width=3, font=("Arial",18,""), textvariable = self.minutes, bg = '#212121', fg = 'white')
         self.sec_label = tkinter.Label(self.parent, width=3, font=("Arial",18,""), textvariable = self.seconds, bg = '#212121', fg = 'white')
         self.canvas = tkinter.Canvas(self.parent, width = 15, height = 15, bg = '#212121', highlightbackground = '#212121')
+        self.widgets()
 
+    def widgets(self):
         if self.color == 'w':
             self.player_name.place(x = 634, y = 50)
             self.sec_label.place(x = 700, y = 20)
@@ -382,9 +356,7 @@ class Clock():
 
     def clock(self):
         if self.running == True:
-
             mins, secs = divmod(self.total_times, 60)
-
             self.minutes.set("{0:02d}".format(mins))
             self.seconds.set("{0:02d}".format(secs))
 
@@ -421,8 +393,8 @@ class Clock():
         self.seconds.set("00")
 
 
-
 class Moves():
+    """wizualizacja listy wykonanych ruchów"""
 
     def __init__(self, parent):
         self.parent = parent
@@ -434,19 +406,15 @@ class Moves():
         self.canvas.pack(side= tkinter.LEFT, fill = tkinter.BOTH, expand = 1)
         self.scrollbar = tkinter.Scrollbar(self.frame, orient = tkinter.VERTICAL, command = self.canvas.yview)
         self.scrollbar.pack(side=tkinter.RIGHT, fill = tkinter.Y)
-
         self.canvas.configure(yscrollcommand = self.scrollbar.set)
         self.canvas.bind('<Configure>', lambda x: self.canvas.configure(scrollregion = self.canvas.bbox('all')))
-
         self.move_frame = tkinter.Frame(self.canvas, bg = '#393d4f')
         self.canvas.create_window((100, 0), window = self.move_frame)
-
 
     def add_move(self, history, color):
         col = 0 if color == 'w' else 1
 
         if self.len%2==0:
-            #self.labels.append(tkinter.Label(self.move_frame, width = 10, text = f'{self.len//2+1}. {history[-1].to_string()}', bg = '#393d4f', fg = 'white'))
             self.labels.append(tkinter.Label(self.move_frame, width = 10, text = f'{self.len//2+1}. {history[-1].to_string()}', bg = '#393d4f', fg = 'white'))
             self.labels.append(tkinter.Label(self.move_frame, width = 10, text = '', bg = '#393d4f', fg = 'white'))
             self.labels[-2].grid(row = self.len//2, column = 0)
@@ -466,6 +434,8 @@ class Moves():
 
 
 class Score:
+    """wizualizacja aktualnego wyniku"""
+
     def __init__(self, parent):
         self.parent = parent
         self.frame = tkinter.Frame(self.parent, bg = '#212121')
@@ -476,17 +446,6 @@ class Score:
         self.scores[0].grid(row = 1, column = 0)
         self.scores[1].grid(row = 1, column = 2)
 
-
     def update_scores(self, scores):
         self.scores[0].config(text = 'Player 1\n'+str(scores[0]))
         self.scores[1].config(text = 'Player 2\n'+str(scores[1]))
-
-
-
-if __name__ == "__main__":
-    root = tkinter.Tk()
-    root.title("Chess")
-    real_board = board.Board()
-    b = BoardVisualiser(root, real_board)
-    b.pack()
-    root.mainloop()
