@@ -20,6 +20,8 @@ class Engine:
         self.play_again = True
         self.players = {'w' : 0, 'b' : 1}
         self.scores = {0 : 0, 1 : 0}
+        self.clocks = {}
+        self.init_win = None
         self.end = False
         self.visualiser.pack()
         self.parent.protocol("WM_DELETE_WINDOW", self.end_game)
@@ -40,7 +42,7 @@ class Engine:
 
     def run(self):
         """uruchamianie silnika"""
-
+        
         while self.play_again:
             self.start_game()
             self.set_clocks()
@@ -80,6 +82,7 @@ class Engine:
                 self.visualiser.review_game(self.game.move_history)
 
             self.players['w'], self.players['b'] = self.players['b'], self.players['w']
+            #self.start_game()
 
     def make_move(self, color):
         """wykonanie ruchu przez gracza (wybranie figury i docelowego pola"""
@@ -195,7 +198,8 @@ class Engine:
 
     def set_clocks(self):
         """ustawienie zegarów"""
-
+        if self.end:
+            return
         clock_white, clock_black = self.visualiser.set_clocks(self.players)
         self.clocks = {'w':clock_white, 'b': clock_black}
         self.clocks['w'].set_increment(self.increment_option)
@@ -233,13 +237,18 @@ class Engine:
         
     def end_game(self):
         """zamknięcie aplikacji"""
-
+        
         self.end = True
         self.visualiser.wait_state.set(1)
-        self.parent.after_cancel(self.visualiser.clock_white.job)
-        self.parent.after_cancel(self.visualiser.clock_black.job)
-        self.visualiser.clock_white.end_game = True
-        self.visualiser.clock_black.end_game = True
+        if self.clocks:
+            self.parent.after_cancel(self.visualiser.clock_white.job)
+            self.parent.after_cancel(self.visualiser.clock_black.job)
+            self.visualiser.clock_white.end_game = True
+            self.visualiser.clock_black.end_game = True
+
+        self.visualiser.move_history.end_game = True
+        self.visualiser.end_game = True
+        self.visualiser.wait_state.set(3)
         self.parent.destroy()
         self.play_again = False
 

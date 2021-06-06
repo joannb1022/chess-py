@@ -22,6 +22,7 @@ class BoardVisualiser(tkinter.Frame):
         self.current_coordinates = (None, None)
         self.color = 'w'
         self.prev_color = 'w'
+        self.end_game = False
         self.show_game = [False]
         self.new_window = None
         self.wait_state = tkinter.IntVar()
@@ -52,7 +53,10 @@ class BoardVisualiser(tkinter.Frame):
         return self.new_window
 
     def draw(self):
-        """funkcja wywołana po pacie"""
+        """rysowanie szachownicy"""
+
+        if self.end_game:
+            return
 
         self.squares_to_change = []
         for i in range(8):
@@ -183,17 +187,23 @@ class BoardVisualiser(tkinter.Frame):
                 self.wait_state.set(1)
 
         self.board.place_pieces()
+        
+        if self.end_game:
+            return
+
         self.parent.bind('<KeyPress>', on_key_press)
         play_button = tkinter.Button(self.parent, text = "Play again", font=("Arial", 14), command = lambda: self.wait_state.set(2), background='#345', activebackground='#345', fg = 'white')
         play_button.place(x = 615, y = 300)
         self.draw()
 
-        while(True):
+        while not self.end_game:
             self.parent.wait_variable(self.wait_state)
             if self.wait_state.get() == 1:
                 self.draw()
             elif self.wait_state.get() == 2:
                 break
+            else:
+                return
 
         play_button.destroy()
         self.parent.unbind('<KeyPress>')
@@ -399,6 +409,7 @@ class Moves():
     def __init__(self, parent):
         self.parent = parent
         self.len = 0
+        self.end_game = False
         self.frame = tkinter.Frame(self.parent)
         self.frame.place(x=570, y=80)
         self.labels = []
@@ -413,6 +424,8 @@ class Moves():
 
     def add_move(self, history, color):
         col = 0 if color == 'w' else 1
+        if self.end_game:
+            return
 
         if self.len%2==0:
             self.labels.append(tkinter.Label(self.move_frame, width = 10, text = f'{self.len//2+1}. {history[-1].to_string()}', bg = '#393d4f', fg = 'white'))
